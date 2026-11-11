@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Seeker app icon. Original artwork. Copyright (C) 2026 Eric Allen. SPDX-License-Identifier: GPL-3.0-or-later -->
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="page" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#dbe4ee"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2dd4bf"/>
+      <stop offset="1" stop-color="#0f766e"/>
+    </linearGradient>
+    <radialGradient id="glass" cx="0.4" cy="0.35" r="0.7">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#99f6e4" stop-opacity="0.35"/>
+    </radialGradient>
+  </defs>
+  <!-- document -->
+  <path d="M22 10h52l22 22v80a6 6 0 0 1-6 6H22a6 6 0 0 1-6-6V16a6 6 0 0 1 6-6z"
+        fill="url(#page)" stroke="#64748b" stroke-width="3"/>
+  <path d="M74 10v18a4 4 0 0 0 4 4h18" fill="#cbd5e1" stroke="#64748b" stroke-width="3" stroke-linejoin="round"/>
+  <!-- text lines, one highlighted -->
+  <g stroke-linecap="round" stroke-width="5">
+    <line x1="28" y1="44" x2="70" y2="44" stroke="#94a3b8"/>
+    <line x1="28" y1="58" x2="62" y2="58" stroke="#94a3b8"/>
+    <line x1="28" y1="72" x2="44" y2="72" stroke="#94a3b8"/>
+    <line x1="28" y1="86" x2="52" y2="86" stroke="#94a3b8"/>
+    <line x1="28" y1="100" x2="58" y2="100" stroke="#94a3b8"/>
+  </g>
+  <rect x="48" y="66" width="26" height="12" rx="3" fill="#facc15"/>
+  <!-- magnifier -->
+  <line x1="98" y1="98" x2="118" y2="118" stroke="#334155" stroke-width="13" stroke-linecap="round"/>
+  <line x1="98" y1="98" x2="117" y2="117" stroke="#475569" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="78" cy="78" r="26" fill="url(#glass)" stroke="url(#ring)" stroke-width="9"/>
+</svg>

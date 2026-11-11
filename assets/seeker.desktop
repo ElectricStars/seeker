@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Seeker
+GenericName=File Search
+Comment=Find files by name and by text inside them
+Exec=seeker %F
+Icon=seeker
+Terminal=false
+Categories=Utility;FileTools;
+Keywords=search;find;grep;files;text;regex;
+StartupWMClass=seeker
+StartupNotify=true
