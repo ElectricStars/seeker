@@ -1,0 +1,6 @@
+seeker (0.1.1-1~noble1) noble; urgency=medium
+
+  * Initial release for the ppa:electricstars/seeker PPA.
+  * Build offline from vendored crates with Ubuntu's rustc-1.97 and cargo-1.97.
+
+ -- Eric Allen <trajic@tutanota.com>  Wed, 11 Nov 2026 17:30:00 -0800

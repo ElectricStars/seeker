@@ -1,0 +1,84 @@
+.TH SEEKER 1 "November 2026" "Seeker 0.1.1" "User Commands"
+.SH NAME
+seeker \- fast desktop file search tool
+.SH SYNOPSIS
+.B seeker
+[\fIOPTIONS\fR] [\fIFOLDER\fR...]
+.br
+.B seeker \-\-cli
+[\fIOPTIONS\fR] [\fIFOLDER\fR...]
+.SH DESCRIPTION
+.B seeker
+finds files by name and by content. Without \fB\-\-cli\fR it opens a window,
+with the form filled in from the options given. With \fB\-\-cli\fR it runs the
+search in the terminal and prints the results.
+.SH OPTIONS
+.TP
+.BR \-n ", " \-\-name " " \fIPATTERN\fR
+File-name wildcards separated by semicolons, e.g. \fB"*.rs;*.toml;!*.lock"\fR.
+.TP
+.B \-\-name\-regex
+Treat \fB\-\-name\fR as a regular expression.
+.TP
+.BR \-t ", " \-\-text " " \fITEXT\fR
+Text to find inside files.
+.TP
+.BR \-e ", " \-\-regex
+Treat \fB\-\-text\fR as a regular expression.
+.TP
+.BR \-s ", " \-\-case
+Case-sensitive text search.
+.TP
+.BR \-w ", " \-\-word
+Match whole words only.
+.TP
+.BR \-H ", " \-\-hidden
+Include hidden files and folders.
+.TP
+.BR \-g ", " \-\-gitignore
+Respect .gitignore and .ignore files.
+.TP
+.B \-\-no\-recurse
+Do not search subfolders.
+.TP
+.BR \-L ", " \-\-follow
+Follow symbolic links.
+.TP
+.BR \-b ", " \-\-binary
+Also search binary files.
+.TP
+.BR \-x ", " \-\-exclude " " \fILIST\fR
+Folders to skip, separated by semicolons
+(default: .git;node_modules;target;__pycache__).
+.TP
+.BR \-C ", " \-\-context " " \fIN\fR
+Context lines shown in the preview.
+.TP
+.BR \-l ", " \-\-files\-only
+In terminal mode, print only file paths.
+.TP
+.B \-\-auto
+In the window, start searching immediately.
+.TP
+.B \-\-cli
+Terminal mode; no window is opened.
+.TP
+.BR \-h ", " \-\-help
+Show help.
+.TP
+.BR \-V ", " \-\-version
+Show the version.
+.SH EXIT STATUS
+In terminal mode: 0 if something was found, 1 if nothing was found, 2 on error.
+.SH EXAMPLES
+.TP
+seeker \-\-cli \-n "*.rs" \-t "fn main" ~/src
+Find Rust files containing "fn main".
+.SH FILES
+.I ~/.local/share/seeker
+holds the window's saved settings.
+.SH SEE ALSO
+.BR rg (1),
+.BR find (1)
+.SH AUTHOR
+Eric Allen <trajic@tutanota.com>.

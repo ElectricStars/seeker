@@ -44,6 +44,27 @@ no Qt, GTK or Python needed.
 | ↑ / ↓ | Move through results (when no text box has focus) |
 | Ctrl+F | Focus the file-name box |
 
+## Install with apt (Ubuntu, Zorin, Mint, Debian)
+
+**Ubuntu 24.04 / Zorin OS 18 / Mint 22: PPA** (once published), which gives automatic updates:
+
+```sh
+sudo add-apt-repository ppa:electricstars/seeker
+sudo apt update
+sudo apt install seeker
+```
+
+**Any Ubuntu 20.04+ or Debian 11+: .deb from the releases page.** Download
+`seeker_X.Y.Z_amd64.deb` from [Releases](https://github.com/ElectricStars/seeker/releases), then:
+
+```sh
+sudo apt install ./seeker_*_amd64.deb
+```
+
+Remove with `sudo apt remove seeker`. The Debian packaging lives in `debian/` (PPA builds) and
+`[package.metadata.deb]` in `Cargo.toml` (the release `.deb`, built with `cargo deb`). See
+`packaging/` for the helper scripts.
+
 ## Install (pre-built binary)
 
 Download `seeker-vX.Y.Z-x86_64-linux.tar.gz` from the

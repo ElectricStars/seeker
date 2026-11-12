@@ -1,0 +1,2 @@
+# The crates in vendor/ come from the orig-vendor component tarball.
+extend-diff-ignore = "^(target|debian/cargo-home)/"

@@ -1,0 +1,40 @@
+Source: seeker
+Section: utils
+Priority: optional
+Maintainer: Eric Allen <trajic@tutanota.com>
+Build-Depends: debhelper-compat (= 13),
+               cargo-1.97,
+               rustc-1.97,
+Standards-Version: 4.6.2
+Homepage: https://github.com/ElectricStars/seeker
+Vcs-Browser: https://github.com/ElectricStars/seeker
+Vcs-Git: https://github.com/ElectricStars/seeker.git
+Rules-Requires-Root: no
+
+Package: seeker
+Architecture: amd64 arm64
+Depends: libdbus-1-3,
+         libegl1,
+         libgl1,
+         libwayland-client0,
+         libwayland-egl1,
+         libx11-6,
+         libx11-xcb1,
+         libxcursor1,
+         libxi6,
+         libxkbcommon-x11-0,
+         libxkbcommon0,
+         libxrender1,
+         ${misc:Depends},
+         ${shlibs:Depends},
+Recommends: xdg-desktop-portal,
+            xdg-utils,
+Suggests: zenity,
+Description: fast desktop file search tool
+ Seeker finds files by name and by content. Name patterns can be wildcards
+ or regular expressions; content searches use the ripgrep engine and support
+ plain text, regular expressions, case sensitivity and whole-word matching.
+ .
+ Results show matching lines with context. Searches can be limited by size
+ and modification date, respect .gitignore files, skip binary files, and be
+ exported to CSV or text. A --cli mode runs the same search in a terminal.

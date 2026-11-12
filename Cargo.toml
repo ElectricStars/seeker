@@ -41,3 +41,39 @@ lto = "thin"
 codegen-units = 1
 strip = true
 opt-level = 3
+
+# `cargo deb` (cargo-deb) settings for the .deb attached to GitHub releases.
+# The Launchpad PPA package is built from debian/ instead.
+[package.metadata.deb]
+maintainer = "Eric Allen <trajic@tutanota.com>"
+copyright = "2026 Eric Allen"
+license-file = ["LICENSE", "0"]
+extended-description = """\
+Seeker finds files by name and by content. Name patterns can be wildcards \
+or regular expressions; content searches use the ripgrep engine and support \
+plain text, regular expressions, case sensitivity and whole-word matching.
+.
+Results show matching lines with context. Searches can be limited by size \
+and modification date, respect .gitignore files, skip binary files, and be \
+exported to CSV or text. A --cli mode runs the same search in a terminal."""
+section = "utils"
+priority = "optional"
+revision = ""
+changelog = "packaging/deb-changelog"
+# The binary is built against glibc 2.31 (cargo zigbuild) and needs GLIBC_2.30 at most.
+# $auto isn't used: dpkg-shlibdeps on new build hosts would demand libc6 >= 2.34
+# because of the libdl/libpthread stubs. The GUI libraries are loaded with
+# dlopen, so they have to be listed by hand.
+depends = "libc6 (>= 2.30), libdbus-1-3, libegl1, libgl1, libwayland-client0, libwayland-egl1, libx11-6, libx11-xcb1, libxcursor1, libxi6, libxkbcommon-x11-0, libxkbcommon0, libxrender1"
+recommends = "xdg-desktop-portal, xdg-utils"
+suggests = "zenity"
+assets = [
+    ["target/release/seeker", "usr/bin/seeker", "755"],
+    ["data/io.github.ElectricStars.Seeker.desktop", "usr/share/applications/", "644"],
+    ["data/io.github.ElectricStars.Seeker.svg", "usr/share/icons/hicolor/scalable/apps/", "644"],
+    ["data/io.github.ElectricStars.Seeker.metainfo.xml", "usr/share/metainfo/", "644"],
+    ["debian/copyright", "usr/share/doc/seeker/copyright", "644"],
+    ["debian/seeker.1", "usr/share/man/man1/seeker.1", "644"],
+    ["README.md", "usr/share/doc/seeker/README.md", "644"],
+    ["CHANGELOG.md", "usr/share/doc/seeker/CHANGELOG.md", "644"],
+]

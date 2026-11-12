@@ -1,0 +1,2253 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: seeker
+Upstream-Contact: Eric Allen <trajic@tutanota.com>
+Source: https://github.com/ElectricStars/seeker
+Comment: Seeker is statically linked with the Rust crates listed below.
+
+Files: *
+Copyright: 2026 Eric Allen
+License: GPL-3+
+
+Files: data/*.metainfo.xml
+Copyright: 2026 Eric Allen
+License: CC0-1.0
+
+Files: debian/*
+Copyright: 2026 Eric Allen <trajic@tutanota.com>
+License: GPL-3+
+
+Files: vendor/ab_glyph/*
+Copyright: Alex Butler <alexheretic@gmail.com>
+License: Apache-2.0
+Comment: crate ab_glyph 0.2.32
+
+Files: vendor/ab_glyph_rasterizer/*
+Copyright: Alex Butler <alexheretic@gmail.com>
+License: Apache-2.0
+Comment: crate ab_glyph_rasterizer 0.1.10
+
+Files: vendor/accesskit/*
+Copyright: The AccessKit contributors
+License: Expat or Apache-2.0
+Comment: crate accesskit 0.25.2
+
+Files: vendor/adler2/*
+Copyright: Jonas Schievink <jonasschievink@gmail.com>
+ oyvindln <oyvindln@users.noreply.github.com>
+License: 0BSD or Expat or Apache-2.0
+Comment: crate adler2 2.0.1
+
+Files: vendor/ahash/*
+Copyright: Tom Kaitchuck <Tom.Kaitchuck@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate ahash 0.8.12
+
+Files: vendor/aho-corasick/*
+Copyright: Andrew Gallant <jamslam@gmail.com>
+License: Unlicense or Expat
+Comment: crate aho-corasick 1.1.5
+
+Files: vendor/android-activity/*
+Copyright: The android-activity developers
+License: Expat or Apache-2.0
+Comment: crate android-activity 0.6.1
+
+Files: vendor/android-properties/*
+Copyright: Mikhail Lappo <mikhail.lappo@esrlabs.com>
+License: Expat
+Comment: crate android-properties 0.2.2
+
+Files: vendor/android_system_properties/*
+Copyright: Nicolas Silva <nical@fastmail.com>
+License: Expat or Apache-2.0
+Comment: crate android_system_properties 0.1.6
+
+Files: vendor/arboard/*
+Copyright: The arboard developers
+License: Expat or Apache-2.0
+Comment: crate arboard 3.7.0
+
+Files: vendor/arrayref/*
+Copyright: David Roundy <roundyd@physics.oregonstate.edu>
+License: BSD-2-clause
+Comment: crate arrayref 0.3.9
+
+Files: vendor/arrayvec/*
+Copyright: bluss
+License: Expat or Apache-2.0
+Comment: crate arrayvec 0.7.8
+
+Files: vendor/as-raw-xcb-connection/*
+Copyright: The as-raw-xcb-connection developers
+License: Expat or Apache-2.0
+Comment: crate as-raw-xcb-connection 1.0.1
+
+Files: vendor/ashpd/*
+Copyright: Bilal Elmoussaoui <bil.elmoussaoui@gmail.com>
+License: Expat
+Comment: crate ashpd 0.14.0
+
+Files: vendor/async-trait/*
+Copyright: David Tolnay <dtolnay@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate async-trait 0.1.92
+
+Files: vendor/atomic-waker/*
+Copyright: Stjepan Glavina <stjepang@gmail.com>
+ Contributors to futures-rs
+License: Apache-2.0 or Expat
+Comment: crate atomic-waker 1.1.2
+
+Files: vendor/autocfg/*
+Copyright: Josh Stone <cuviper@gmail.com>
+License: Apache-2.0 or Expat
+Comment: crate autocfg 1.5.1
+
+Files: vendor/bit-set/*
+Copyright: Alexis Beingessner <a.beingessner@gmail.com>
+License: Apache-2.0 or Expat
+Comment: crate bit-set 0.10.0
+
+Files: vendor/bit-vec/*
+Copyright: Alexis Beingessner <a.beingessner@gmail.com>
+License: Apache-2.0 or Expat
+Comment: crate bit-vec 0.9.1
+
+Files: vendor/bitflags/*
+Copyright: The Rust Project Developers
+License: Expat or Apache-2.0
+Comment: crate bitflags 2.13.2
+
+Files: vendor/bitflags-1.3.2/*
+Copyright: The Rust Project Developers
+License: Expat or Apache-2.0
+Comment: crate bitflags 1.3.2
+
+Files: vendor/block2/*
+Copyright: Mads Marquart <mads@marquart.dk>
+License: Expat
+Comment: crate block2 0.6.2
+
+Files: vendor/block2-0.5.1/*
+Copyright: Steven Sheldon
+ Mads Marquart <mads@marquart.dk>
+License: Expat
+Comment: crate block2 0.5.1
+
+Files: vendor/bstr/*
+Copyright: Andrew Gallant <jamslam@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate bstr 1.13.1
+
+Files: vendor/bumpalo/*
+Copyright: Nick Fitzgerald <fitzgen@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate bumpalo 3.20.3
+
+Files: vendor/bytemuck/*
+Copyright: Lokathor <zefria@gmail.com>
+License: Zlib or Apache-2.0 or Expat
+Comment: crate bytemuck 1.25.2
+
+Files: vendor/bytemuck_derive/*
+Copyright: Lokathor <zefria@gmail.com>
+License: Zlib or Apache-2.0 or Expat
+Comment: crate bytemuck_derive 1.12.1
+
+Files: vendor/byteorder-lite/*
+Copyright: The byteorder-lite developers
+License: Unlicense or Expat
+Comment: crate byteorder-lite 0.1.0
+
+Files: vendor/bytes/*
+Copyright: Carl Lerche <me@carllerche.com>
+ Sean McArthur <sean@seanmonstar.com>
+License: Expat
+Comment: crate bytes 1.12.1
+
+Files: vendor/calloop/*
+Copyright: Elinor Berger <elinor@safaradeg.net>
+License: Expat
+Comment: crate calloop 0.14.5
+
+Files: vendor/calloop-0.13.0/*
+Copyright: Elinor Berger <elinor@safaradeg.net>
+License: Expat
+Comment: crate calloop 0.13.0
+
+Files: vendor/calloop-wayland-source/*
+Copyright: Kirill Chibisov <contact@kchibisov.com>
+License: Expat
+Comment: crate calloop-wayland-source 0.4.1
+
+Files: vendor/calloop-wayland-source-0.3.0/*
+Copyright: Kirill Chibisov <contact@kchibisov.com>
+License: Expat
+Comment: crate calloop-wayland-source 0.3.0
+
+Files: vendor/cc/*
+Copyright: The cc developers
+License: Expat or Apache-2.0
+Comment: crate cc 1.11.1
+
+Files: vendor/cfg-if/*
+Copyright: Alex Crichton <alex@alexcrichton.com>
+License: Expat or Apache-2.0
+Comment: crate cfg-if 1.0.5
+
+Files: vendor/cfg_aliases/*
+Copyright: Zicklag <zicklag@katharostech.com>
+License: Expat
+Comment: crate cfg_aliases 0.2.2
+
+Files: vendor/cgl/*
+Copyright: The Servo Project Developers
+License: Expat or Apache-2.0
+Comment: crate cgl 0.3.2
+
+Files: vendor/chrono/*
+Copyright: The chrono developers
+License: Expat or Apache-2.0
+Comment: crate chrono 0.4.45
+
+Files: vendor/clipboard-win/*
+Copyright: Douman <douman@gmx.se>
+License: BSL-1.0
+Comment: crate clipboard-win 5.4.3
+
+Files: vendor/codespan-reporting/*
+Copyright: Brendan Zabarauskas <bjzaba@yahoo.com.au>
+License: Apache-2.0
+Comment: crate codespan-reporting 0.13.1
+
+Files: vendor/color/*
+Copyright: The color developers
+License: Apache-2.0 or Expat
+Comment: crate color 0.3.3
+
+Files: vendor/combine/*
+Copyright: Markus Westerlind <marwes91@gmail.com>
+License: Expat
+Comment: crate combine 4.6.9
+
+Files: vendor/concurrent-queue/*
+Copyright: Stjepan Glavina <stjepang@gmail.com>
+ Taiki Endo <te316e89@gmail.com>
+ John Nunley <dev@notgull.net>
+License: Apache-2.0 or Expat
+Comment: crate concurrent-queue 2.5.0
+
+Files: vendor/core-foundation/*
+Copyright: The Servo Project Developers
+License: Expat or Apache-2.0
+Comment: crate core-foundation 0.9.4
+
+Files: vendor/core-foundation-sys/*
+Copyright: The Servo Project Developers
+License: Expat or Apache-2.0
+Comment: crate core-foundation-sys 0.8.7
+
+Files: vendor/core-graphics/*
+Copyright: The Servo Project Developers
+License: Expat or Apache-2.0
+Comment: crate core-graphics 0.23.2
+
+Files: vendor/core-graphics-types/*
+Copyright: The Servo Project Developers
+License: Expat or Apache-2.0
+Comment: crate core-graphics-types 0.1.3
+
+Files: vendor/core_detect/*
+Copyright: Thom Chiovoloni <chiovolonit@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate core_detect 1.0.0
+
+Files: vendor/crc32fast/*
+Copyright: Sam Rijs <srijs@airpost.net>
+ Alex Crichton <alex@alexcrichton.com>
+License: Expat or Apache-2.0
+Comment: crate crc32fast 1.5.5
+
+Files: vendor/crossbeam-channel/*
+Copyright: The crossbeam-channel developers
+License: Expat or Apache-2.0
+Comment: crate crossbeam-channel 0.5.17
+
+Files: vendor/crossbeam-deque/*
+Copyright: The crossbeam-deque developers
+License: Expat or Apache-2.0
+Comment: crate crossbeam-deque 0.8.8
+
+Files: vendor/crossbeam-epoch/*
+Copyright: The crossbeam-epoch developers
+License: Expat or Apache-2.0
+Comment: crate crossbeam-epoch 0.9.21
+
+Files: vendor/crossbeam-utils/*
+Copyright: The crossbeam-utils developers
+License: Expat or Apache-2.0
+Comment: crate crossbeam-utils 0.8.23
+
+Files: vendor/crunchy/*
+Copyright: Eira Fransham <jackefransham@gmail.com>
+License: Expat
+Comment: crate crunchy 0.2.4
+
+Files: vendor/csv/*
+Copyright: Andrew Gallant <jamslam@gmail.com>
+License: Unlicense or Expat
+Comment: crate csv 1.4.0
+
+Files: vendor/csv-core/*
+Copyright: Andrew Gallant <jamslam@gmail.com>
+License: Unlicense or Expat
+Comment: crate csv-core 0.1.13
+
+Files: vendor/cursor-icon/*
+Copyright: Kirill Chibisov <contact@kchibisov.com>
+License: Expat or Apache-2.0 or Zlib
+Comment: crate cursor-icon 1.2.0
+
+Files: vendor/dispatch/*
+Copyright: Steven Sheldon
+License: Expat
+Comment: crate dispatch 0.2.0
+
+Files: vendor/dispatch2/*
+Copyright: Mads Marquart <mads@marquart.dk>
+ Mary <mary@mary.zone>
+License: Zlib or Apache-2.0 or Expat
+Comment: crate dispatch2 0.3.1
+
+Files: vendor/dlib/*
+Copyright: Elinor Berger <elinor@safaradeg.net>
+License: Expat
+Comment: crate dlib 0.5.3
+
+Files: vendor/document-features/*
+Copyright: Slint Developers <info@slint.dev>
+License: Expat or Apache-2.0
+Comment: crate document-features 0.2.12
+
+Files: vendor/downcast-rs/*
+Copyright: Ashish Myles <marcianx@gmail.com>
+ Runji Wang <wangrunji0408@163.com>
+License: Expat or Apache-2.0
+Comment: crate downcast-rs 1.2.1
+
+Files: vendor/dpi/*
+Copyright: The dpi developers
+License: Apache-2.0 and Expat
+Comment: crate dpi 0.1.2
+
+Files: vendor/ecolor/*
+Copyright: Emil Ernerfeldt <emil.ernerfeldt@gmail.com>
+ Andreas Reich <reichandreas@gmx.de>
+License: Expat or Apache-2.0
+Comment: crate ecolor 0.37.0
+
+Files: vendor/eframe/*
+Copyright: Emil Ernerfeldt <emil.ernerfeldt@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate eframe 0.37.0
+
+Files: vendor/egui/*
+Copyright: Emil Ernerfeldt <emil.ernerfeldt@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate egui 0.37.0
+
+Files: vendor/egui-wgpu/*
+Copyright: Nils Hasenbanck <nils@hasenbanck.de>
+ embotech <opensource@embotech.com>
+ Emil Ernerfeldt <emil.ernerfeldt@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate egui-wgpu 0.37.0
+
+Files: vendor/egui-winit/*
+Copyright: Emil Ernerfeldt <emil.ernerfeldt@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate egui-winit 0.37.0
+
+Files: vendor/egui_extras/*
+Copyright: Dominik Rössler <dominik@freshx.de>
+ Emil Ernerfeldt <emil.ernerfeldt@gmail.com>
+ René Rössler <rene@freshx.de>
+License: Expat or Apache-2.0
+Comment: crate egui_extras 0.37.0
+
+Files: vendor/egui_glow/*
+Copyright: Emil Ernerfeldt <emil.ernerfeldt@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate egui_glow 0.37.0
+
+Files: vendor/either/*
+Copyright: The either developers
+License: Expat or Apache-2.0
+Comment: crate either 1.19.0
+
+Files: vendor/emath/*
+Copyright: Emil Ernerfeldt <emil.ernerfeldt@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate emath 0.37.0
+
+Files: vendor/encoding_rs/*
+Copyright: Henri Sivonen <hsivonen@hsivonen.fi>
+License: Apache-2.0 or Expat, and BSD-3-clause
+Comment: crate encoding_rs 0.8.44
+
+Files: vendor/encoding_rs_io/*
+Copyright: Andrew Gallant <jamslam@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate encoding_rs_io 0.1.8
+
+Files: vendor/endi/*
+Copyright: Zeeshan Ali Khan <zeenix@gmail.com>
+License: Expat
+Comment: crate endi 1.1.1
+
+Files: vendor/enum-map/*
+Copyright: Luna Borowska <luna@borowska.pw>
+License: Expat or Apache-2.0
+Comment: crate enum-map 3.1.0
+
+Files: vendor/enum-map-derive/*
+Copyright: Luna Borowska <luna@borowska.pw>
+License: Expat or Apache-2.0
+Comment: crate enum-map-derive 1.0.1
+
+Files: vendor/enumn/*
+Copyright: David Tolnay <dtolnay@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate enumn 0.1.14
+
+Files: vendor/epaint/*
+Copyright: Emil Ernerfeldt <emil.ernerfeldt@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate epaint 0.37.0
+
+Files: vendor/epaint_default_fonts/*
+Copyright: Emil Ernerfeldt <emil.ernerfeldt@gmail.com>
+License: Expat or Apache-2.0, and OFL-1.1, and Ubuntu-font-1.0
+Comment: crate epaint_default_fonts 0.37.0
+
+Files: vendor/equivalent/*
+Copyright: The equivalent developers
+License: Apache-2.0 or Expat
+Comment: crate equivalent 1.0.3
+
+Files: vendor/errno/*
+Copyright: Chris Wong <lambda.fairy@gmail.com>
+ Dan Gohman <dev@sunfishcode.online>
+License: Expat or Apache-2.0
+Comment: crate errno 0.3.14
+
+Files: vendor/error-code/*
+Copyright: Douman <douman@gmx.se>
+License: BSL-1.0
+Comment: crate error-code 3.4.0
+
+Files: vendor/euclid/*
+Copyright: The Servo Project Developers
+License: Expat or Apache-2.0
+Comment: crate euclid 0.22.14
+
+Files: vendor/fastrand/*
+Copyright: Stjepan Glavina <stjepang@gmail.com>
+License: Apache-2.0 or Expat
+Comment: crate fastrand 2.5.0
+
+Files: vendor/fax/*
+Copyright: Sebastian K <s3bk@protonmail.com>
+License: Expat
+Comment: crate fax 0.2.7
+
+Files: vendor/fdeflate/*
+Copyright: The image-rs Developers
+License: Expat or Apache-2.0
+Comment: crate fdeflate 0.3.7
+
+Files: vendor/fearless_simd/*
+Copyright: Raph Levien <raph.levien@gmail.com>
+License: Apache-2.0 or Expat
+Comment: crate fearless_simd 0.4.1
+
+Files: vendor/find-msvc-tools/*
+Copyright: The find-msvc-tools developers
+License: Expat or Apache-2.0
+Comment: crate find-msvc-tools 0.1.15
+
+Files: vendor/fixedbitset/*
+Copyright: bluss
+License: Expat or Apache-2.0
+Comment: crate fixedbitset 0.5.9
+
+Files: vendor/flate2/*
+Copyright: Alex Crichton <alex@alexcrichton.com>
+ Josh Triplett <josh@joshtriplett.org>
+License: Expat or Apache-2.0
+Comment: crate flate2 1.1.11
+
+Files: vendor/foldhash/*
+Copyright: Orson Peters <orsonpeters@gmail.com>
+License: Zlib
+Comment: crate foldhash 0.2.0
+
+Files: vendor/foldhash-0.1.5/*
+Copyright: Orson Peters <orsonpeters@gmail.com>
+License: Zlib
+Comment: crate foldhash 0.1.5
+
+Files: vendor/font-types/*
+Copyright: The font-types developers
+License: Expat or Apache-2.0
+Comment: crate font-types 0.12.7
+
+Files: vendor/foreign-types/*
+Copyright: Steven Fackler <sfackler@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate foreign-types 0.5.0
+
+Files: vendor/foreign-types-macros/*
+Copyright: Steven Fackler <sfackler@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate foreign-types-macros 0.2.4
+
+Files: vendor/foreign-types-shared/*
+Copyright: Steven Fackler <sfackler@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate foreign-types-shared 0.3.1
+
+Files: vendor/futures-core/*
+Copyright: The futures-core developers
+License: Expat or Apache-2.0
+Comment: crate futures-core 0.3.34
+
+Files: vendor/futures-io/*
+Copyright: The futures-io developers
+License: Expat or Apache-2.0
+Comment: crate futures-io 0.3.34
+
+Files: vendor/futures-macro/*
+Copyright: The futures-macro developers
+License: Expat or Apache-2.0
+Comment: crate futures-macro 0.3.34
+
+Files: vendor/futures-task/*
+Copyright: The futures-task developers
+License: Expat or Apache-2.0
+Comment: crate futures-task 0.3.34
+
+Files: vendor/futures-util/*
+Copyright: The futures-util developers
+License: Expat or Apache-2.0
+Comment: crate futures-util 0.3.34
+
+Files: vendor/gethostname/*
+Copyright: Sebastian Wiesner <sebastian@swsnr.de>
+License: Apache-2.0
+Comment: crate gethostname 1.1.0
+
+Files: vendor/getrandom/*
+Copyright: The Rand Project Developers
+License: Expat or Apache-2.0
+Comment: crate getrandom 0.4.3
+
+Files: vendor/getrandom-0.3.4/*
+Copyright: The Rand Project Developers
+License: Expat or Apache-2.0
+Comment: crate getrandom 0.3.4
+
+Files: vendor/gl_generator/*
+Copyright: Brendan Zabarauskas <bjzaba@yahoo.com.au>
+ Corey Richardson
+ Arseny Kapoulkine
+License: Apache-2.0
+Comment: crate gl_generator 0.14.0
+
+Files: vendor/glifo/*
+Copyright: The glifo developers
+License: Apache-2.0 or Expat
+Comment: crate glifo 0.3.0
+
+Files: vendor/globset/*
+Copyright: Andrew Gallant <jamslam@gmail.com>
+License: Unlicense or Expat
+Comment: crate globset 0.4.21
+
+Files: vendor/glow/*
+Copyright: Joshua Groves <josh@joshgroves.com>
+ Dzmitry Malyshau <kvarkus@gmail.com>
+License: Expat or Apache-2.0 or Zlib
+Comment: crate glow 0.17.0
+
+Files: vendor/glutin/*
+Copyright: Kirill Chibisov <contact@kchibisov.com>
+License: Apache-2.0
+Comment: crate glutin 0.32.3
+
+Files: vendor/glutin-winit/*
+Copyright: Kirill Chibisov <contact@kchibisov.com>
+License: Expat
+Comment: crate glutin-winit 0.5.0
+
+Files: vendor/glutin_egl_sys/*
+Copyright: Kirill Chibisov <contact@kchibisov.com>
+License: Apache-2.0
+Comment: crate glutin_egl_sys 0.7.1
+
+Files: vendor/glutin_glx_sys/*
+Copyright: Kirill Chibisov <contact@kchibisov.com>
+License: Apache-2.0
+Comment: crate glutin_glx_sys 0.6.1
+
+Files: vendor/glutin_wgl_sys/*
+Copyright: Kirill Chibisov <contact@kchibisov.com>
+License: Apache-2.0
+Comment: crate glutin_wgl_sys 0.6.1
+
+Files: vendor/grep-matcher/*
+Copyright: Andrew Gallant <jamslam@gmail.com>
+License: Unlicense or Expat
+Comment: crate grep-matcher 0.1.9
+
+Files: vendor/grep-regex/*
+Copyright: Andrew Gallant <jamslam@gmail.com>
+License: Unlicense or Expat
+Comment: crate grep-regex 0.1.14
+
+Files: vendor/grep-searcher/*
+Copyright: Andrew Gallant <jamslam@gmail.com>
+License: Unlicense or Expat
+Comment: crate grep-searcher 0.1.17
+
+Files: vendor/guillotiere/*
+Copyright: Nicolas Silva <nical@fastmail.com>
+License: Expat or Apache-2.0
+Comment: crate guillotiere 0.7.0
+
+Files: vendor/half/*
+Copyright: Kathryn Long <squeeself@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate half 2.7.1
+
+Files: vendor/harfrust/*
+Copyright: The harfrust developers
+License: Expat
+Comment: crate harfrust 0.12.0
+
+Files: vendor/hashbrown/*
+Copyright: The hashbrown developers
+License: Expat or Apache-2.0
+Comment: crate hashbrown 0.17.1
+
+Files: vendor/hashbrown-0.15.5/*
+Copyright: Amanieu d'Antras <amanieu@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate hashbrown 0.15.5
+
+Files: vendor/hermit-abi/*
+Copyright: The hermit-abi developers
+License: Expat or Apache-2.0
+Comment: crate hermit-abi 0.5.3
+
+Files: vendor/hex/*
+Copyright: KokaKiwi <kokakiwi@kokakiwi.net>
+License: Expat or Apache-2.0
+Comment: crate hex 0.4.3
+
+Files: vendor/iana-time-zone/*
+Copyright: Andrew Straw <strawman@astraw.com>
+ René Kijewski <rene.kijewski@fu-berlin.de>
+ Ryan Lopopolo <rjl@hyperbo.la>
+License: Expat or Apache-2.0
+Comment: crate iana-time-zone 0.1.65
+
+Files: vendor/iana-time-zone-haiku/*
+Copyright: René Kijewski <crates.io@k6i.de>
+License: Expat or Apache-2.0
+Comment: crate iana-time-zone-haiku 0.1.2
+
+Files: vendor/ignore/*
+Copyright: Andrew Gallant <jamslam@gmail.com>
+License: Unlicense or Expat
+Comment: crate ignore 0.4.34
+
+Files: vendor/image/*
+Copyright: The image-rs Developers
+License: Expat or Apache-2.0
+Comment: crate image 0.25.10
+
+Files: vendor/indexmap/*
+Copyright: The indexmap developers
+License: Apache-2.0 or Expat
+Comment: crate indexmap 2.14.2
+
+Files: vendor/is-docker/*
+Copyright: Sean Larkin <TheLarkInn@users.noreply.github.com>
+License: Expat
+Comment: crate is-docker 0.2.0
+
+Files: vendor/is-wsl/*
+Copyright: Sean Larkin <TheLarkInn@users.noreply.github.com>
+License: Expat
+Comment: crate is-wsl 0.4.0
+
+Files: vendor/itertools/*
+Copyright: bluss
+License: Expat or Apache-2.0
+Comment: crate itertools 0.15.0
+
+Files: vendor/itoa/*
+Copyright: David Tolnay <dtolnay@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate itoa 1.0.19
+
+Files: vendor/jni/*
+Copyright: jni team
+License: Expat or Apache-2.0
+Comment: crate jni 0.22.4
+
+Files: vendor/jni-macros/*
+Copyright: The jni-macros developers
+License: Expat or Apache-2.0
+Comment: crate jni-macros 0.22.4
+
+Files: vendor/jni-sys/*
+Copyright: Steven Fackler <sfackler@gmail.com>
+ Robert Bragg <robert@sixbynine.org>
+License: Expat or Apache-2.0
+Comment: crate jni-sys 0.4.1
+
+Files: vendor/jni-sys-0.3.1/*
+Copyright: Steven Fackler <sfackler@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate jni-sys 0.3.1
+
+Files: vendor/jni-sys-macros/*
+Copyright: Robert Bragg <robert@sixbynine.org>
+License: Expat or Apache-2.0
+Comment: crate jni-sys-macros 0.4.1
+
+Files: vendor/jobserver/*
+Copyright: Alex Crichton <alex@alexcrichton.com>
+License: Expat or Apache-2.0
+Comment: crate jobserver 0.1.35
+
+Files: vendor/js-sys/*
+Copyright: The wasm-bindgen Developers
+License: Expat or Apache-2.0
+Comment: crate js-sys 0.3.107
+
+Files: vendor/khronos_api/*
+Copyright: Brendan Zabarauskas <bjzaba@yahoo.com.au>
+ Corey Richardson
+ Arseny Kapoulkine
+ Pierre Krieger <pierre.krieger1708@gmail.com>
+License: Apache-2.0
+Comment: crate khronos_api 3.1.0
+
+Files: vendor/kurbo/*
+Copyright: The kurbo developers
+License: Apache-2.0 or Expat
+Comment: crate kurbo 0.13.1
+
+Files: vendor/libc/*
+Copyright: The libc developers
+License: Expat or Apache-2.0
+Comment: crate libc 0.2.191
+
+Files: vendor/libloading/*
+Copyright: Simonas Kazlauskas <libloading@kazlauskas.me>
+License: ISC
+Comment: crate libloading 0.8.9
+
+Files: vendor/libm/*
+Copyright: Alex Crichton <alex@alexcrichton.com>
+ Amanieu d'Antras <amanieu@gmail.com>
+ Jorge Aparicio <japaricious@gmail.com>
+ Trevor Gross <tg@trevorgross.com>
+License: Expat
+Comment: crate libm 0.2.16
+
+Files: vendor/libredox/*
+Copyright: 4lDO2 <4lDO2@protonmail.com>
+License: Expat
+Comment: crate libredox 0.1.25
+
+Files: vendor/linebender_resource_handle/*
+Copyright: The linebender_resource_handle developers
+License: Apache-2.0 or Expat
+Comment: crate linebender_resource_handle 0.1.1
+
+Files: vendor/linux-raw-sys/*
+Copyright: Dan Gohman <dev@sunfishcode.online>
+License: Apache-2.0 with LLVM exception or Apache-2.0 or Expat
+Comment: crate linux-raw-sys 0.12.1
+
+Files: vendor/linux-raw-sys-0.4.15/*
+Copyright: Dan Gohman <dev@sunfishcode.online>
+License: Apache-2.0 with LLVM exception or Apache-2.0 or Expat
+Comment: crate linux-raw-sys 0.4.15
+
+Files: vendor/litrs/*
+Copyright: Lukas Kalbertodt <lukas.kalbertodt@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate litrs 1.0.1
+
+Files: vendor/lock_api/*
+Copyright: Amanieu d'Antras <amanieu@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate lock_api 0.4.14
+
+Files: vendor/log/*
+Copyright: The Rust Project Developers
+License: Expat or Apache-2.0
+Comment: crate log 0.4.35
+
+Files: vendor/memchr/*
+Copyright: Andrew Gallant <jamslam@gmail.com>
+ bluss
+License: Unlicense or Expat
+Comment: crate memchr 2.8.3
+
+Files: vendor/memmap2/*
+Copyright: Dan Burkert <dan@danburkert.com>
+ Yevhenii Reizner <razrfalcon@gmail.com>
+ The Contributors
+License: Expat or Apache-2.0
+Comment: crate memmap2 0.9.12
+
+Files: vendor/memoffset/*
+Copyright: Gilad Naaman <gilad.naaman@gmail.com>
+License: Expat
+Comment: crate memoffset 0.9.1
+
+Files: vendor/miniz_oxide/*
+Copyright: Frommi <daniil.liferenko@gmail.com>
+ oyvindln <oyvindln@users.noreply.github.com>
+ Rich Geldreich richgel99@gmail.com
+License: Expat or Zlib or Apache-2.0
+Comment: crate miniz_oxide 0.9.1
+
+Files: vendor/miniz_oxide-0.8.9/*
+Copyright: Frommi <daniil.liferenko@gmail.com>
+ oyvindln <oyvindln@users.noreply.github.com>
+ Rich Geldreich richgel99@gmail.com
+License: Expat or Zlib or Apache-2.0
+Comment: crate miniz_oxide 0.8.9
+
+Files: vendor/moxcms/*
+Copyright: Radzivon Bartoshyk
+License: BSD-3-clause or Apache-2.0
+Comment: crate moxcms 0.8.1
+
+Files: vendor/multiversion_no_op/*
+Copyright: Henri Sivonen <hsivonen@hsivonen.fi>
+License: Apache-2.0 or Expat
+Comment: crate multiversion_no_op 1.0.0
+
+Files: vendor/naga/*
+Copyright: gfx-rs developers
+License: Expat or Apache-2.0
+Comment: crate naga 30.0.1
+
+Files: vendor/naga-types/*
+Copyright: gfx-rs developers
+License: Expat or Apache-2.0
+Comment: crate naga-types 30.0.1
+
+Files: vendor/ndk/*
+Copyright: The Rust Mobile contributors
+License: Expat or Apache-2.0
+Comment: crate ndk 0.9.0
+
+Files: vendor/ndk-context/*
+Copyright: The Rust Windowing contributors
+License: Expat or Apache-2.0
+Comment: crate ndk-context 0.1.1
+
+Files: vendor/ndk-sys/*
+Copyright: The Rust Windowing contributors
+License: Expat or Apache-2.0
+Comment: crate ndk-sys 0.6.0+11769913
+
+Files: vendor/nohash-hasher/*
+Copyright: Parity Technologies <admin@parity.io>
+License: Apache-2.0 or Expat
+Comment: crate nohash-hasher 0.2.0
+
+Files: vendor/nom/*
+Copyright: contact@geoffroycouprie.com
+License: Expat
+Comment: crate nom 8.0.0
+
+Files: vendor/num-traits/*
+Copyright: The Rust Project Developers
+License: Expat or Apache-2.0
+Comment: crate num-traits 0.2.19
+
+Files: vendor/num_enum/*
+Copyright: Daniel Wagner-Hall <dawagner@gmail.com>
+ Daniel Henry-Mantilla <daniel.henry.mantilla@gmail.com>
+ Vincent Esche <regexident@gmail.com>
+License: BSD-3-clause or Expat or Apache-2.0
+Comment: crate num_enum 0.7.6
+
+Files: vendor/num_enum_derive/*
+Copyright: Daniel Wagner-Hall <dawagner@gmail.com>
+ Daniel Henry-Mantilla <daniel.henry.mantilla@gmail.com>
+ Vincent Esche <regexident@gmail.com>
+License: BSD-3-clause or Expat or Apache-2.0
+Comment: crate num_enum_derive 0.7.6
+
+Files: vendor/objc-sys/*
+Copyright: Mads Marquart <mads@marquart.dk>
+License: Expat
+Comment: crate objc-sys 0.3.5
+
+Files: vendor/objc2/*
+Copyright: Mads Marquart <mads@marquart.dk>
+License: Expat
+Comment: crate objc2 0.6.5
+
+Files: vendor/objc2-0.5.3/*
+Copyright: Steven Sheldon
+ Mads Marquart <mads@marquart.dk>
+License: Expat
+Comment: crate objc2 0.5.3
+
+Files: vendor/objc2-app-kit/*
+Copyright: The objc2-app-kit developers
+License: Zlib or Apache-2.0 or Expat
+Comment: crate objc2-app-kit 0.3.2
+
+Files: vendor/objc2-app-kit-0.2.2/*
+Copyright: The objc2-app-kit developers
+License: Expat
+Comment: crate objc2-app-kit 0.2.2
+
+Files: vendor/objc2-cloud-kit/*
+Copyright: The objc2-cloud-kit developers
+License: Expat
+Comment: crate objc2-cloud-kit 0.2.2
+
+Files: vendor/objc2-contacts/*
+Copyright: The objc2-contacts developers
+License: Expat
+Comment: crate objc2-contacts 0.2.2
+
+Files: vendor/objc2-core-data/*
+Copyright: The objc2-core-data developers
+License: Expat
+Comment: crate objc2-core-data 0.2.2
+
+Files: vendor/objc2-core-foundation/*
+Copyright: The objc2-core-foundation developers
+License: Zlib or Apache-2.0 or Expat
+Comment: crate objc2-core-foundation 0.3.2
+
+Files: vendor/objc2-core-graphics/*
+Copyright: The objc2-core-graphics developers
+License: Zlib or Apache-2.0 or Expat
+Comment: crate objc2-core-graphics 0.3.2
+
+Files: vendor/objc2-core-image/*
+Copyright: The objc2-core-image developers
+License: Expat
+Comment: crate objc2-core-image 0.2.2
+
+Files: vendor/objc2-core-location/*
+Copyright: The objc2-core-location developers
+License: Expat
+Comment: crate objc2-core-location 0.2.2
+
+Files: vendor/objc2-encode/*
+Copyright: Mads Marquart <mads@marquart.dk>
+License: Expat
+Comment: crate objc2-encode 4.1.0
+
+Files: vendor/objc2-foundation/*
+Copyright: The objc2-foundation developers
+License: Expat
+Comment: crate objc2-foundation 0.3.2
+
+Files: vendor/objc2-foundation-0.2.2/*
+Copyright: The objc2-foundation developers
+License: Expat
+Comment: crate objc2-foundation 0.2.2
+
+Files: vendor/objc2-io-surface/*
+Copyright: The objc2-io-surface developers
+License: Zlib or Apache-2.0 or Expat
+Comment: crate objc2-io-surface 0.3.2
+
+Files: vendor/objc2-link-presentation/*
+Copyright: The objc2-link-presentation developers
+License: Expat
+Comment: crate objc2-link-presentation 0.2.2
+
+Files: vendor/objc2-metal/*
+Copyright: The objc2-metal developers
+License: Expat
+Comment: crate objc2-metal 0.2.2
+
+Files: vendor/objc2-quartz-core/*
+Copyright: The objc2-quartz-core developers
+License: Expat
+Comment: crate objc2-quartz-core 0.2.2
+
+Files: vendor/objc2-symbols/*
+Copyright: The objc2-symbols developers
+License: Expat
+Comment: crate objc2-symbols 0.2.2
+
+Files: vendor/objc2-ui-kit/*
+Copyright: The objc2-ui-kit developers
+License: Zlib or Apache-2.0 or Expat
+Comment: crate objc2-ui-kit 0.3.2
+
+Files: vendor/objc2-ui-kit-0.2.2/*
+Copyright: The objc2-ui-kit developers
+License: Expat
+Comment: crate objc2-ui-kit 0.2.2
+
+Files: vendor/objc2-uniform-type-identifiers/*
+Copyright: The objc2-uniform-type-identifiers developers
+License: Zlib or Apache-2.0 or Expat
+Comment: crate objc2-uniform-type-identifiers 0.3.2
+
+Files: vendor/objc2-uniform-type-identifiers-0.2.2/*
+Copyright: The objc2-uniform-type-identifiers developers
+License: Expat
+Comment: crate objc2-uniform-type-identifiers 0.2.2
+
+Files: vendor/objc2-user-notifications/*
+Copyright: The objc2-user-notifications developers
+License: Expat
+Comment: crate objc2-user-notifications 0.2.2
+
+Files: vendor/once_cell/*
+Copyright: Aleksey Kladov <aleksey.kladov@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate once_cell 1.21.4
+
+Files: vendor/open/*
+Copyright: Sebastian Thiel <byronimo@gmail.com>
+License: Expat
+Comment: crate open 5.4.5
+
+Files: vendor/orbclient/*
+Copyright: Jeremy Soller <jackpot51@gmail.com>
+License: Expat
+Comment: crate orbclient 0.3.55
+
+Files: vendor/ordered-stream/*
+Copyright: Daniel De Graaf <code@danieldg.net>
+ Zeeshan Ali Khan <zeeshanak@gnome.org>
+License: Expat or Apache-2.0
+Comment: crate ordered-stream 0.2.0
+
+Files: vendor/os_pipe/*
+Copyright: Jack O'Connor
+License: Expat
+Comment: crate os_pipe 1.2.3
+
+Files: vendor/owned_ttf_parser/*
+Copyright: Alex Butler <alexheretic@gmail.com>
+License: Apache-2.0
+Comment: crate owned_ttf_parser 0.25.1
+
+Files: vendor/parking_lot/*
+Copyright: Amanieu d'Antras <amanieu@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate parking_lot 0.12.5
+
+Files: vendor/parking_lot_core/*
+Copyright: Amanieu d'Antras <amanieu@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate parking_lot_core 0.9.12
+
+Files: vendor/peniko/*
+Copyright: The peniko developers
+License: Apache-2.0 or Expat
+Comment: crate peniko 0.6.1
+
+Files: vendor/percent-encoding/*
+Copyright: The rust-url developers
+License: Expat or Apache-2.0
+Comment: crate percent-encoding 2.3.2
+
+Files: vendor/petgraph/*
+Copyright: bluss
+ mitchmindtree
+License: Expat or Apache-2.0
+Comment: crate petgraph 0.8.3
+
+Files: vendor/pin-project/*
+Copyright: The pin-project developers
+License: Apache-2.0 or Expat
+Comment: crate pin-project 1.1.13
+
+Files: vendor/pin-project-internal/*
+Copyright: The pin-project-internal developers
+License: Apache-2.0 or Expat
+Comment: crate pin-project-internal 1.1.13
+
+Files: vendor/pin-project-lite/*
+Copyright: The pin-project-lite developers
+License: Apache-2.0 or Expat
+Comment: crate pin-project-lite 0.2.17
+
+Files: vendor/pkg-config/*
+Copyright: Alex Crichton <alex@alexcrichton.com>
+License: Expat or Apache-2.0
+Comment: crate pkg-config 0.3.34
+
+Files: vendor/plain/*
+Copyright: jzr
+License: Expat or Apache-2.0
+Comment: crate plain 0.2.3
+
+Files: vendor/png/*
+Copyright: The image-rs Developers
+License: Expat or Apache-2.0
+Comment: crate png 0.18.1
+
+Files: vendor/polling/*
+Copyright: Stjepan Glavina <stjepang@gmail.com>
+ John Nunley <dev@notgull.net>
+License: Apache-2.0 or Expat
+Comment: crate polling 3.11.0
+
+Files: vendor/pollster/*
+Copyright: Joshua Barretto <joshua@jsbarretto.com>
+License: Apache-2.0 or Expat
+Comment: crate pollster 1.0.1
+
+Files: vendor/polycool/*
+Copyright: The polycool developers
+License: Expat or Apache-2.0
+Comment: crate polycool 0.4.0
+
+Files: vendor/portable-atomic/*
+Copyright: The portable-atomic developers
+License: Apache-2.0 or Expat
+Comment: crate portable-atomic 1.15.0
+
+Files: vendor/portable-atomic-util/*
+Copyright: The portable-atomic-util developers
+License: Apache-2.0 or Expat
+Comment: crate portable-atomic-util 0.2.8
+
+Files: vendor/proc-macro-crate/*
+Copyright: Bastian Köcher <git@kchr.de>
+License: Expat or Apache-2.0
+Comment: crate proc-macro-crate 3.5.0
+
+Files: vendor/proc-macro2/*
+Copyright: David Tolnay <dtolnay@gmail.com>
+ Alex Crichton <alex@alexcrichton.com>
+License: Expat or Apache-2.0
+Comment: crate proc-macro2 1.0.107
+
+Files: vendor/profiling/*
+Copyright: Philip Degarmo <aclysma@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate profiling 1.0.18
+
+Files: vendor/pxfm/*
+Copyright: Radzivon Bartoshyk
+License: BSD-3-clause or Apache-2.0
+Comment: crate pxfm 0.1.30
+
+Files: vendor/quick-error/*
+Copyright: Paul Colomiets <paul@colomiets.name>
+ Colin Kiegel <kiegel@gmx.de>
+License: Expat or Apache-2.0
+Comment: crate quick-error 2.0.1
+
+Files: vendor/quick-xml/*
+Copyright: The quick-xml developers
+License: Expat
+Comment: crate quick-xml 0.41.0
+
+Files: vendor/quote/*
+Copyright: David Tolnay <dtolnay@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate quote 1.0.47
+
+Files: vendor/r-efi/*
+Copyright: The r-efi developers
+License: Expat or Apache-2.0 or LGPL-2.1+
+Comment: crate r-efi 6.0.0
+
+Files: vendor/r-efi-5.3.0/*
+Copyright: The r-efi developers
+License: Expat or Apache-2.0 or LGPL-2.1+
+Comment: crate r-efi 5.3.0
+
+Files: vendor/raw-window-handle/*
+Copyright: Osspial <osspial@gmail.com>
+License: Expat or Apache-2.0 or Zlib
+Comment: crate raw-window-handle 0.6.2
+
+Files: vendor/read-fonts/*
+Copyright: The read-fonts developers
+License: Expat or Apache-2.0
+Comment: crate read-fonts 0.41.0
+
+Files: vendor/redox_syscall/*
+Copyright: Jeremy Soller <jackpot51@gmail.com>
+License: Expat
+Comment: crate redox_syscall 0.9.5
+
+Files: vendor/redox_syscall-0.4.1/*
+Copyright: Jeremy Soller <jackpot51@gmail.com>
+License: Expat
+Comment: crate redox_syscall 0.4.1
+
+Files: vendor/redox_syscall-0.5.18/*
+Copyright: Jeremy Soller <jackpot51@gmail.com>
+License: Expat
+Comment: crate redox_syscall 0.5.18
+
+Files: vendor/regex/*
+Copyright: The Rust Project Developers
+ Andrew Gallant <jamslam@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate regex 1.13.1
+
+Files: vendor/regex-automata/*
+Copyright: The Rust Project Developers
+ Andrew Gallant <jamslam@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate regex-automata 0.4.18
+
+Files: vendor/regex-syntax/*
+Copyright: The Rust Project Developers
+ Andrew Gallant <jamslam@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate regex-syntax 0.8.11
+
+Files: vendor/renderdoc-sys/*
+Copyright: Eyal Kalderon <ebkalderon@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate renderdoc-sys 1.1.0
+
+Files: vendor/rfd/*
+Copyright: Poly <marynczak.bartlomiej@gmail.com>
+License: Expat
+Comment: crate rfd 0.18.0
+
+Files: vendor/ron/*
+Copyright: Christopher Durham <cad97@cad97.com>
+ Dzmitry Malyshau <kvarkus@gmail.com>
+ Thomas Schaller <torkleyy@gmail.com>
+ Juniper Tyree <juniper.tyree@helsinki.fi>
+License: Expat or Apache-2.0
+Comment: crate ron 0.12.3
+
+Files: vendor/rustc-hash/*
+Copyright: The Rust Project Developers
+License: Apache-2.0 or Expat
+Comment: crate rustc-hash 2.1.3
+
+Files: vendor/rustc-hash-1.1.0/*
+Copyright: The Rust Project Developers
+License: Apache-2.0 or Expat
+Comment: crate rustc-hash 1.1.0
+
+Files: vendor/rustc_version/*
+Copyright: The rustc_version developers
+License: Expat or Apache-2.0
+Comment: crate rustc_version 0.4.1
+
+Files: vendor/rustix/*
+Copyright: Dan Gohman <dev@sunfishcode.online>
+ Jakub Konka <kubkon@jakubkonka.com>
+License: Apache-2.0 with LLVM exception or Apache-2.0 or Expat
+Comment: crate rustix 1.1.6
+
+Files: vendor/rustix-0.38.44/*
+Copyright: Dan Gohman <dev@sunfishcode.online>
+ Jakub Konka <kubkon@jakubkonka.com>
+License: Apache-2.0 with LLVM exception or Apache-2.0 or Expat
+Comment: crate rustix 0.38.44
+
+Files: vendor/rustversion/*
+Copyright: David Tolnay <dtolnay@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate rustversion 1.0.23
+
+Files: vendor/ryu/*
+Copyright: David Tolnay <dtolnay@gmail.com>
+License: Apache-2.0 or BSL-1.0
+Comment: crate ryu 1.0.23
+
+Files: vendor/same-file/*
+Copyright: Andrew Gallant <jamslam@gmail.com>
+License: Unlicense or Expat
+Comment: crate same-file 1.0.6
+
+Files: vendor/scoped-tls/*
+Copyright: Alex Crichton <alex@alexcrichton.com>
+License: Expat or Apache-2.0
+Comment: crate scoped-tls 1.0.1
+
+Files: vendor/scopeguard/*
+Copyright: bluss
+License: Expat or Apache-2.0
+Comment: crate scopeguard 1.2.0
+
+Files: vendor/sctk-adwaita/*
+Copyright: Poly <marynczak.bartlomiej@gmail.com>
+License: Expat
+Comment: crate sctk-adwaita 0.10.1
+
+Files: vendor/self_cell/*
+Copyright: Lukas Bergdoll <lukas.bergdoll@gmail.com>
+License: Apache-2.0 or GPL-2
+Comment: crate self_cell 1.3.0
+
+Files: vendor/semver/*
+Copyright: David Tolnay <dtolnay@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate semver 1.0.28
+
+Files: vendor/send_wrapper/*
+Copyright: Thomas Keh
+License: Expat or Apache-2.0
+Comment: crate send_wrapper 0.6.0
+
+Files: vendor/serde/*
+Copyright: Erick Tryzelaar <erick.tryzelaar@gmail.com>
+ David Tolnay <dtolnay@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate serde 1.0.229
+
+Files: vendor/serde_core/*
+Copyright: Erick Tryzelaar <erick.tryzelaar@gmail.com>
+ David Tolnay <dtolnay@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate serde_core 1.0.229
+
+Files: vendor/serde_derive/*
+Copyright: Erick Tryzelaar <erick.tryzelaar@gmail.com>
+ David Tolnay <dtolnay@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate serde_derive 1.0.229
+
+Files: vendor/serde_repr/*
+Copyright: David Tolnay <dtolnay@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate serde_repr 0.1.21
+
+Files: vendor/shlex/*
+Copyright: comex <comexk@gmail.com>
+ Fenhl <fenhl@fenhl.net>
+ Adrian Taylor <adetaylor@chromium.org>
+ Alex Touchet <alextouchet@outlook.com>
+ Daniel Parks <dp+git@oxidized.org>
+ Garrett Berg <googberg@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate shlex 2.0.1
+
+Files: vendor/simd-adler32/*
+Copyright: Marvin Countryman <me@maar.vin>
+License: Expat
+Comment: crate simd-adler32 0.3.10
+
+Files: vendor/simd_cesu8/*
+Copyright: Sean C. Roach <me@seancroach.dev>
+License: Apache-2.0 or Expat
+Comment: crate simd_cesu8 1.2.0
+
+Files: vendor/simdutf8/*
+Copyright: Hans Kratz <hans@appfour.com>
+License: Expat or Apache-2.0
+Comment: crate simdutf8 0.1.5
+
+Files: vendor/skrifa/*
+Copyright: The skrifa developers
+License: Expat or Apache-2.0
+Comment: crate skrifa 0.44.0
+
+Files: vendor/slab/*
+Copyright: Carl Lerche <me@carllerche.com>
+License: Expat
+Comment: crate slab 0.4.12
+
+Files: vendor/slotmap/*
+Copyright: Orson Peters <orsonpeters@gmail.com>
+License: Zlib
+Comment: crate slotmap 1.1.1
+
+Files: vendor/smallvec/*
+Copyright: The Servo Project Developers
+License: Expat or Apache-2.0
+Comment: crate smallvec 1.16.5
+
+Files: vendor/smithay-client-toolkit/*
+Copyright: Elinor Berger <elinor@safaradeg.net>
+ i509VCB <mail@i509.me>
+ Ashley Wulber <ashley@system76.com>
+License: Expat
+Comment: crate smithay-client-toolkit 0.20.0
+
+Files: vendor/smithay-client-toolkit-0.19.2/*
+Copyright: Elinor Berger <elinor@safaradeg.net>
+ i509VCB <mail@i509.me>
+ Ashley Wulber <ashley@system76.com>
+License: Expat
+Comment: crate smithay-client-toolkit 0.19.2
+
+Files: vendor/smithay-clipboard/*
+Copyright: Kirill Chibisov <contact@kchibisov.com>
+ Elinor Berger <elinor@safaradeg.net>
+License: Expat
+Comment: crate smithay-clipboard 0.7.3
+
+Files: vendor/smol_str/*
+Copyright: Aleksey Kladov <aleksey.kladov@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate smol_str 0.2.2
+
+Files: vendor/socket2/*
+Copyright: Alex Crichton <alex@alexcrichton.com>
+ Thomas de Zeeuw <thomasdezeeuw@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate socket2 0.6.5
+
+Files: vendor/static_assertions/*
+Copyright: Nikolai Vazquez
+License: Expat or Apache-2.0
+Comment: crate static_assertions 1.1.0
+
+Files: vendor/strict-num/*
+Copyright: Yevhenii Reizner <razrfalcon@gmail.com>
+License: Expat
+Comment: crate strict-num 0.1.1
+
+Files: vendor/syn/*
+Copyright: David Tolnay <dtolnay@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate syn 3.0.10
+
+Files: vendor/syn-2.0.119/*
+Copyright: David Tolnay <dtolnay@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate syn 2.0.119
+
+Files: vendor/tempfile/*
+Copyright: Steven Allen <steven@stebalien.com>
+ The Rust Project Developers
+ Ashley Mannix <ashleymannix@live.com.au>
+ Jason White <me@jasonwhite.io>
+License: Expat or Apache-2.0
+Comment: crate tempfile 3.27.0
+
+Files: vendor/thiserror/*
+Copyright: David Tolnay <dtolnay@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate thiserror 2.0.21
+
+Files: vendor/thiserror-1.0.69/*
+Copyright: David Tolnay <dtolnay@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate thiserror 1.0.69
+
+Files: vendor/thiserror-impl/*
+Copyright: David Tolnay <dtolnay@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate thiserror-impl 2.0.21
+
+Files: vendor/thiserror-impl-1.0.69/*
+Copyright: David Tolnay <dtolnay@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate thiserror-impl 1.0.69
+
+Files: vendor/tiff/*
+Copyright: The image-rs Developers
+License: Expat
+Comment: crate tiff 0.11.3
+
+Files: vendor/tiny-skia/*
+Copyright: Yevhenii Reizner <razrfalcon@gmail.com>
+License: BSD-3-clause
+Comment: crate tiny-skia 0.11.4
+
+Files: vendor/tiny-skia-path/*
+Copyright: Yevhenii Reizner <razrfalcon@gmail.com>
+License: BSD-3-clause
+Comment: crate tiny-skia-path 0.11.4
+
+Files: vendor/tokio/*
+Copyright: Tokio Contributors <team@tokio.rs>
+License: Expat
+Comment: crate tokio 1.54.1
+
+Files: vendor/toml_datetime/*
+Copyright: The toml_datetime developers
+License: Expat or Apache-2.0
+Comment: crate toml_datetime 1.1.3+spec-1.1.0
+
+Files: vendor/toml_edit/*
+Copyright: The toml_edit developers
+License: Expat or Apache-2.0
+Comment: crate toml_edit 0.25.19+spec-1.1.0
+
+Files: vendor/toml_parser/*
+Copyright: The toml_parser developers
+License: Expat or Apache-2.0
+Comment: crate toml_parser 1.1.5+spec-1.1.0
+
+Files: vendor/tracing/*
+Copyright: Eliza Weisman <eliza@buoyant.io>
+ Tokio Contributors <team@tokio.rs>
+License: Expat
+Comment: crate tracing 0.1.44
+
+Files: vendor/tracing-core/*
+Copyright: Tokio Contributors <team@tokio.rs>
+License: Expat
+Comment: crate tracing-core 0.1.36
+
+Files: vendor/tree_magic_mini/*
+Copyright: Matt Brubeck <mbrubeck@limpet.net>
+ Allison Hancock <aahancoc@umich.edu>
+License: Expat
+Comment: crate tree_magic_mini 3.2.2
+
+Files: vendor/ttf-parser/*
+Copyright: Caleb Maclennan <caleb@alerque.com>
+ Laurenz Stampfl <laurenz.stampfl@gmail.com>
+ Yevhenii Reizner <razrfalcon@gmail.com>
+ خالد حسني (Khaled Hosny) <khaled@aliftype.com>
+License: Expat or Apache-2.0
+Comment: crate ttf-parser 0.25.1
+
+Files: vendor/type-map/*
+Copyright: Jacob Brown <kardeiz@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate type-map 0.5.1
+
+Files: vendor/typeid/*
+Copyright: David Tolnay <dtolnay@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate typeid 1.0.3
+
+Files: vendor/uds_windows/*
+Copyright: Azure IoT Edge Devs
+ Harald Hoyer <harald@redhat.com>
+License: Expat
+Comment: crate uds_windows 1.2.1
+
+Files: vendor/unicode-general-category/*
+Copyright: YesLogic Pty. Ltd. <info@yeslogic.com>
+License: Apache-2.0
+Comment: crate unicode-general-category 1.1.0
+
+Files: vendor/unicode-ident/*
+Copyright: David Tolnay <dtolnay@gmail.com>
+License: Expat or Apache-2.0, and Unicode-3.0
+Comment: crate unicode-ident 1.0.27
+
+Files: vendor/unicode-properties/*
+Copyright: Charles Lew <crlf0710@gmail.com>
+ Manish Goregaokar <manishsmail@gmail.com>
+License: Expat or Apache-2.0, and Unicode-3.0
+Comment: crate unicode-properties 0.1.5
+
+Files: vendor/unicode-segmentation/*
+Copyright: kwantam <kwantam@gmail.com>
+ Manish Goregaokar <manishsmail@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate unicode-segmentation 1.13.3
+
+Files: vendor/unicode-width/*
+Copyright: kwantam <kwantam@gmail.com>
+ Manish Goregaokar <manishsmail@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate unicode-width 0.2.3
+
+Files: vendor/uuid/*
+Copyright: The uuid developers
+License: Apache-2.0 or Expat
+Comment: crate uuid 1.29.2
+
+Files: vendor/vello_common/*
+Copyright: The vello_common developers
+License: Apache-2.0 or Expat
+Comment: crate vello_common 0.2.0
+
+Files: vendor/vello_cpu/*
+Copyright: The vello_cpu developers
+License: Apache-2.0 or Expat
+Comment: crate vello_cpu 0.2.0
+
+Files: vendor/version_check/*
+Copyright: Sergio Benitez <sb@sergio.bz>
+License: Expat or Apache-2.0
+Comment: crate version_check 0.9.5
+
+Files: vendor/walkdir/*
+Copyright: Andrew Gallant <jamslam@gmail.com>
+License: Unlicense or Expat
+Comment: crate walkdir 2.5.0
+
+Files: vendor/wasip2/*
+Copyright: The wasip2 developers
+License: Apache-2.0 with LLVM exception or Apache-2.0 or Expat
+Comment: crate wasip2 1.0.4+wasi-0.2.12
+
+Files: vendor/wasm-bindgen/*
+Copyright: The wasm-bindgen Developers
+License: Expat or Apache-2.0
+Comment: crate wasm-bindgen 0.2.130
+
+Files: vendor/wasm-bindgen-futures/*
+Copyright: The wasm-bindgen Developers
+License: Expat or Apache-2.0
+Comment: crate wasm-bindgen-futures 0.4.80
+
+Files: vendor/wasm-bindgen-macro/*
+Copyright: The wasm-bindgen Developers
+License: Expat or Apache-2.0
+Comment: crate wasm-bindgen-macro 0.2.130
+
+Files: vendor/wasm-bindgen-macro-support/*
+Copyright: The wasm-bindgen Developers
+License: Expat or Apache-2.0
+Comment: crate wasm-bindgen-macro-support 0.2.130
+
+Files: vendor/wasm-bindgen-shared/*
+Copyright: The wasm-bindgen Developers
+License: Expat or Apache-2.0
+Comment: crate wasm-bindgen-shared 0.2.130
+
+Files: vendor/wayland-backend/*
+Copyright: Elinor Berger <elinor@safaradeg.net>
+License: Expat
+Comment: crate wayland-backend 0.3.17
+
+Files: vendor/wayland-client/*
+Copyright: Elinor Berger <elinor@safaradeg.net>
+License: Expat
+Comment: crate wayland-client 0.31.15
+
+Files: vendor/wayland-csd-frame/*
+Copyright: Kirill Chibisov <contact@kchibisov.com>
+License: Expat
+Comment: crate wayland-csd-frame 0.3.0
+
+Files: vendor/wayland-cursor/*
+Copyright: Elinor Berger <elinor@safaradeg.net>
+License: Expat
+Comment: crate wayland-cursor 0.31.14
+
+Files: vendor/wayland-protocols/*
+Copyright: Elinor Berger <elinor@safaradeg.net>
+License: Expat
+Comment: crate wayland-protocols 0.32.13
+
+Files: vendor/wayland-protocols-experimental/*
+Copyright: Elinor Berger <elinor@safaradeg.net>
+License: Expat
+Comment: crate wayland-protocols-experimental 20250721.0.1
+
+Files: vendor/wayland-protocols-misc/*
+Copyright: Elinor Berger <elinor@safaradeg.net>
+License: Expat
+Comment: crate wayland-protocols-misc 0.3.12
+
+Files: vendor/wayland-protocols-plasma/*
+Copyright: Elinor Berger <elinor@safaradeg.net>
+License: Expat
+Comment: crate wayland-protocols-plasma 0.3.12
+
+Files: vendor/wayland-protocols-wlr/*
+Copyright: Elinor Berger <elinor@safaradeg.net>
+License: Expat
+Comment: crate wayland-protocols-wlr 0.3.12
+
+Files: vendor/wayland-scanner/*
+Copyright: Elinor Berger <elinor@safaradeg.net>
+License: Expat
+Comment: crate wayland-scanner 0.31.11
+
+Files: vendor/wayland-sys/*
+Copyright: Elinor Berger <elinor@safaradeg.net>
+License: Expat
+Comment: crate wayland-sys 0.31.11
+
+Files: vendor/web-sys/*
+Copyright: The wasm-bindgen Developers
+License: Expat or Apache-2.0
+Comment: crate web-sys 0.3.107
+
+Files: vendor/web-time/*
+Copyright: The web-time developers
+License: Expat or Apache-2.0
+Comment: crate web-time 1.1.0
+
+Files: vendor/weezl/*
+Copyright: The image-rs Developers
+License: Expat or Apache-2.0
+Comment: crate weezl 0.1.12
+
+Files: vendor/wgpu/*
+Copyright: gfx-rs developers
+License: Expat or Apache-2.0
+Comment: crate wgpu 30.0.1
+
+Files: vendor/wgpu-core/*
+Copyright: gfx-rs developers
+License: Expat or Apache-2.0
+Comment: crate wgpu-core 30.0.1
+
+Files: vendor/wgpu-core-deps-windows-linux-android/*
+Copyright: gfx-rs developers
+License: Expat or Apache-2.0
+Comment: crate wgpu-core-deps-windows-linux-android 30.0.1
+
+Files: vendor/wgpu-hal/*
+Copyright: gfx-rs developers
+License: Expat or Apache-2.0
+Comment: crate wgpu-hal 30.0.1
+
+Files: vendor/wgpu-naga-bridge/*
+Copyright: gfx-rs developers
+License: Expat or Apache-2.0
+Comment: crate wgpu-naga-bridge 30.0.1
+
+Files: vendor/wgpu-types/*
+Copyright: gfx-rs developers
+License: Expat or Apache-2.0
+Comment: crate wgpu-types 30.0.1
+
+Files: vendor/winapi-util/*
+Copyright: Andrew Gallant <jamslam@gmail.com>
+License: Unlicense or Expat
+Comment: crate winapi-util 0.1.11
+
+Files: vendor/windows-core/*
+Copyright: The windows-core developers
+License: Expat or Apache-2.0
+Comment: crate windows-core 0.62.2
+
+Files: vendor/windows-implement/*
+Copyright: The windows-implement developers
+License: Expat or Apache-2.0
+Comment: crate windows-implement 0.60.2
+
+Files: vendor/windows-interface/*
+Copyright: The windows-interface developers
+License: Expat or Apache-2.0
+Comment: crate windows-interface 0.59.3
+
+Files: vendor/windows-link/*
+Copyright: The windows-link developers
+License: Expat or Apache-2.0
+Comment: crate windows-link 0.2.1
+
+Files: vendor/windows-result/*
+Copyright: The windows-result developers
+License: Expat or Apache-2.0
+Comment: crate windows-result 0.4.1
+
+Files: vendor/windows-strings/*
+Copyright: The windows-strings developers
+License: Expat or Apache-2.0
+Comment: crate windows-strings 0.5.1
+
+Files: vendor/windows-sys/*
+Copyright: The windows-sys developers
+License: Expat or Apache-2.0
+Comment: crate windows-sys 0.61.2
+
+Files: vendor/windows-sys-0.52.0/*
+Copyright: Microsoft
+License: Expat or Apache-2.0
+Comment: crate windows-sys 0.52.0
+
+Files: vendor/windows-sys-0.59.0/*
+Copyright: Microsoft
+License: Expat or Apache-2.0
+Comment: crate windows-sys 0.59.0
+
+Files: vendor/windows-targets/*
+Copyright: Microsoft
+License: Expat or Apache-2.0
+Comment: crate windows-targets 0.52.6
+
+Files: vendor/windows_aarch64_gnullvm/*
+Copyright: Microsoft
+License: Expat or Apache-2.0
+Comment: crate windows_aarch64_gnullvm 0.52.6
+
+Files: vendor/windows_aarch64_msvc/*
+Copyright: Microsoft
+License: Expat or Apache-2.0
+Comment: crate windows_aarch64_msvc 0.52.6
+
+Files: vendor/windows_i686_gnu/*
+Copyright: Microsoft
+License: Expat or Apache-2.0
+Comment: crate windows_i686_gnu 0.52.6
+
+Files: vendor/windows_i686_gnullvm/*
+Copyright: Microsoft
+License: Expat or Apache-2.0
+Comment: crate windows_i686_gnullvm 0.52.6
+
+Files: vendor/windows_i686_msvc/*
+Copyright: Microsoft
+License: Expat or Apache-2.0
+Comment: crate windows_i686_msvc 0.52.6
+
+Files: vendor/windows_x86_64_gnu/*
+Copyright: Microsoft
+License: Expat or Apache-2.0
+Comment: crate windows_x86_64_gnu 0.52.6
+
+Files: vendor/windows_x86_64_gnullvm/*
+Copyright: Microsoft
+License: Expat or Apache-2.0
+Comment: crate windows_x86_64_gnullvm 0.52.6
+
+Files: vendor/windows_x86_64_msvc/*
+Copyright: Microsoft
+License: Expat or Apache-2.0
+Comment: crate windows_x86_64_msvc 0.52.6
+
+Files: vendor/winit/*
+Copyright: The winit contributors
+ Pierre Krieger <pierre.krieger1708@gmail.com>
+License: Apache-2.0
+Comment: crate winit 0.30.13
+
+Files: vendor/winnow/*
+Copyright: The winnow developers
+License: Expat
+Comment: crate winnow 1.0.5
+
+Files: vendor/wit-bindgen/*
+Copyright: Alex Crichton <alex@alexcrichton.com>
+License: Apache-2.0 with LLVM exception or Apache-2.0 or Expat
+Comment: crate wit-bindgen 0.57.1
+
+Files: vendor/wl-clipboard-rs/*
+Copyright: Ivan Molodetskikh <yalterz@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate wl-clipboard-rs 0.9.5
+
+Files: vendor/x11-dl/*
+Copyright: daggerbot <daggerbot@gmail.com>
+ Erle Pereira <erle@erlepereira.com>
+ AltF02 <contact@altf2.dev>
+License: Expat
+Comment: crate x11-dl 2.21.0
+
+Files: vendor/x11rb/*
+Copyright: Uli Schlachter <psychon@znc.in>
+ Eduardo Sánchez Muñoz <eduardosm-dev@e64.io>
+ notgull <jtnunley01@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate x11rb 0.13.2
+
+Files: vendor/x11rb-protocol/*
+Copyright: Uli Schlachter <psychon@znc.in>
+ Eduardo Sánchez Muñoz <eduardosm-dev@e64.io>
+ notgull <jtnunley01@gmail.com>
+License: Expat or Apache-2.0
+Comment: crate x11rb-protocol 0.13.2
+
+Files: vendor/xcursor/*
+Copyright: Samuele Esposito
+License: Expat
+Comment: crate xcursor 0.3.11
+
+Files: vendor/xkbcommon-dl/*
+Copyright: Francesca Frangipane <francesca@comfysoft.net>
+License: Expat
+Comment: crate xkbcommon-dl 0.4.2
+
+Files: vendor/xkeysym/*
+Copyright: John Nunley <jtnunley01@gmail.com>
+License: Expat or Apache-2.0 or Zlib
+Comment: crate xkeysym 0.2.1
+
+Files: vendor/xml-rs/*
+Copyright: Vladimir Matveev <vmatveev@citrine.cc>
+License: Expat
+Comment: crate xml-rs 0.8.29
+
+Files: vendor/zbus/*
+Copyright: Zeeshan Ali Khan <zeeshanak@gnome.org>
+License: Expat
+Comment: crate zbus 6.2.1
+
+Files: vendor/zbus_macros/*
+Copyright: Marc-André Lureau <marcandre.lureau@redhat.com>
+ Zeeshan Ali Khan <zeeshanak@gnome.org>
+License: Expat
+Comment: crate zbus_macros 6.2.1
+
+Files: vendor/zbus_utils/*
+Copyright: Zeeshan Ali Khan <zeeshanak@gnome.org>
+ turbocooler <turbocooler@cocaine.ninja>
+License: Expat
+Comment: crate zbus_utils 6.1.0
+
+Files: vendor/zcheapstr/*
+Copyright: Zeeshan Ali Khan <zeeshanak@gnome.org>
+License: Expat
+Comment: crate zcheapstr 1.2.0
+
+Files: vendor/zerocopy/*
+Copyright: The zerocopy developers
+License: BSD-2-clause or Apache-2.0 or Expat
+Comment: crate zerocopy 0.8.63
+
+Files: vendor/zerocopy-derive/*
+Copyright: The zerocopy-derive developers
+License: BSD-2-clause or Apache-2.0 or Expat
+Comment: crate zerocopy-derive 0.8.63
+
+Files: vendor/zlib-rs/*
+Copyright: The zlib-rs developers
+License: Zlib
+Comment: crate zlib-rs 0.6.8
+
+Files: vendor/zruntime/*
+Copyright: Zeeshan Ali Khan <zeeshanak@gnome.org>
+License: Expat
+Comment: crate zruntime 0.2.2
+
+Files: vendor/zune-core/*
+Copyright: The zune-core developers
+License: Expat or Apache-2.0 or Zlib
+Comment: crate zune-core 0.5.3
+
+Files: vendor/zune-jpeg/*
+Copyright: caleb <etemesicaleb@gmail.com>
+License: Expat or Apache-2.0 or Zlib
+Comment: crate zune-jpeg 0.5.15
+
+License: 0BSD
+ Copyright (C) YEAR by AUTHOR EMAIL
+ .
+ Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+License: Apache-2.0
+ On Debian systems, the full text of this license can be found in
+ /usr/share/common-licenses/Apache-2.0.
+
+License: Apache-2.0 with LLVM exception
+ On Debian systems, the full text of the Apache License 2.0 can be found
+ in /usr/share/common-licenses/Apache-2.0. The exception reads:
+ .
+ ---- LLVM Exceptions to the Apache 2.0 License ----
+ .
+    As an exception, if, as a result of your compiling your source code, portions
+    of this Software are embedded into an Object form of such source code, you
+    may redistribute such embedded portions in such Object form without complying
+    with the conditions of Sections 4(a), 4(b) and 4(d) of the License.
+ .
+    In addition, if you combine or link compiled forms of this Software with
+    software that is licensed under the GPLv2 ("Combined Software") and if a
+    court of competent jurisdiction determines that the patent provision (Section
+    3), the indemnity provision (Section 9) or other Section of the License
+    conflicts with the conditions of the GPLv2, you may retroactively and
+    prospectively choose to deem waived or otherwise exclude such Section(s) of
+    the License, but only in their entirety and only with respect to the Combined
+    Software.
+
+License: BSD-2-clause
+ Copyright (c) <year> <owner>
+ .
+ Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+ .
+ 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+ .
+ 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+License: BSD-3-clause
+ Copyright (c) <year> <owner>.
+ .
+ Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+ .
+ 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+ .
+ 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+ .
+ 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+License: BSL-1.0
+ Boost Software License - Version 1.0 - August 17th, 2003
+ .
+ Permission is hereby granted, free of charge, to any person or organization obtaining a copy of the software and accompanying documentation covered by this license (the "Software") to use, reproduce, display, distribute, execute, and transmit the Software, and to prepare derivative works of the Software, and to permit third-parties to whom the Software is furnished to do so, all subject to the following:
+ .
+ The copyright notices in the Software and this entire statement, including the above license grant, this restriction and the following disclaimer, must be included in all copies of the Software, in whole or in part, and all derivative works of the Software, unless such copies or derivative works are solely in the form of machine-executable object code generated by a source language processor.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+License: CC0-1.0
+ On Debian systems, the full text of this license can be found in
+ /usr/share/common-licenses/CC0-1.0.
+
+License: Expat
+ MIT License
+ .
+ Copyright (c) <year> <copyright holders>
+ .
+ Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+ associated documentation files (the "Software"), to deal in the Software without restriction, including
+ without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the
+ following conditions:
+ .
+ The above copyright notice and this permission notice shall be included in all copies or substantial
+ portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+ LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
+ EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+ USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+License: GPL-2
+ On Debian systems, the full text of this license can be found in
+ /usr/share/common-licenses/GPL-2.
+
+License: GPL-3+
+ On Debian systems, the full text of this license can be found in
+ /usr/share/common-licenses/GPL-3.
+
+License: ISC
+ ISC License
+ .
+ Copyright <year> <owner>
+ .
+ Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+License: LGPL-2.1+
+ On Debian systems, the full text of this license can be found in
+ /usr/share/common-licenses/LGPL-2.1.
+
+License: OFL-1.1
+ SIL OPEN FONT LICENSE
+ .
+ Version 1.1 - 26 February 2007
+ .
+ PREAMBLE
+ .
+ The goals of the Open Font License (OFL) are to stimulate worldwide development of collaborative font projects, to support the font creation efforts of academic and linguistic communities, and to provide a free and open framework in which fonts may be shared and improved in partnership with others.
+ .
+ The OFL allows the licensed fonts to be used, studied, modified and redistributed freely as long as they are not sold by themselves. The fonts, including any derivative works, can be bundled, embedded, redistributed and/or sold with any software provided that any reserved names are not used by derivative works. The fonts and derivatives, however, cannot be released under any other type of license. The requirement for fonts to remain under this license does not apply to any document created using the fonts or their derivatives.
+ .
+ DEFINITIONS
+ .
+ "Font Software" refers to the set of files released by the Copyright Holder(s) under this license and clearly marked as such. This may include source files, build scripts and documentation.
+ .
+ "Reserved Font Name" refers to any names specified as such after the copyright statement(s).
+ .
+ "Original Version" refers to the collection of Font Software components as distributed by the Copyright Holder(s).
+ .
+ "Modified Version" refers to any derivative made by adding to, deleting, or substituting — in part or in whole — any of the components of the Original Version, by changing formats or by porting the Font Software to a new environment.
+ .
+ "Author" refers to any designer, engineer, programmer, technical writer or other person who contributed to the Font Software.
+ .
+ PERMISSION & CONDITIONS
+ .
+ Permission is hereby granted, free of charge, to any person obtaining a copy of the Font Software, to use, study, copy, merge, embed, modify, redistribute, and sell modified and unmodified copies of the Font Software, subject to the following conditions:
+ .
+ 1) Neither the Font Software nor any of its individual components, in Original or Modified Versions, may be sold by itself.
+ .
+ 2) Original or Modified Versions of the Font Software may be bundled, redistributed and/or sold with any software, provided that each copy contains the above copyright notice and this license. These can be included either as stand-alone text files, human-readable headers or in the appropriate machine-readable metadata fields within text or binary files as long as those fields can be easily viewed by the user.
+ .
+ 3) No Modified Version of the Font Software may use the Reserved Font Name(s) unless explicit written permission is granted by the corresponding Copyright Holder. This restriction only applies to the primary font name as presented to the users.
+ .
+ 4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font Software shall not be used to promote, endorse or advertise any Modified Version, except to acknowledge the contribution(s) of the Copyright Holder(s) and the Author(s) or with their explicit written permission.
+ .
+ 5) The Font Software, modified or unmodified, in part or in whole, must be distributed entirely under this license, and must not be distributed under any other license. The requirement for fonts to remain under this license does not apply to any document created using the Font Software.
+ .
+ TERMINATION
+ .
+ This license becomes null and void if any of the above conditions are not met.
+ .
+ DISCLAIMER
+ .
+ THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.
+
+License: Ubuntu-font-1.0
+ -------------------------------
+ UBUNTU FONT LICENCE Version 1.0
+ -------------------------------
+ .
+ PREAMBLE
+ This licence allows the licensed fonts to be used, studied, modified and
+ redistributed freely. The fonts, including any derivative works, can be
+ bundled, embedded, and redistributed provided the terms of this licence
+ are met. The fonts and derivatives, however, cannot be released under
+ any other licence. The requirement for fonts to remain under this
+ licence does not require any document created using the fonts or their
+ derivatives to be published under this licence, as long as the primary
+ purpose of the document is not to be a vehicle for the distribution of
+ the fonts.
+ .
+ DEFINITIONS
+ "Font Software" refers to the set of files released by the Copyright
+ Holder(s) under this licence and clearly marked as such. This may
+ include source files, build scripts and documentation.
+ .
+ "Original Version" refers to the collection of Font Software components
+ as received under this licence.
+ .
+ "Modified Version" refers to any derivative made by adding to, deleting,
+ or substituting -- in part or in whole -- any of the components of the
+ Original Version, by changing formats or by porting the Font Software to
+ a new environment.
+ .
+ "Copyright Holder(s)" refers to all individuals and companies who have a
+ copyright ownership of the Font Software.
+ .
+ "Substantially Changed" refers to Modified Versions which can be easily
+ identified as dissimilar to the Font Software by users of the Font
+ Software comparing the Original Version with the Modified Version.
+ .
+ To "Propagate" a work means to do anything with it that, without
+ permission, would make you directly or secondarily liable for
+ infringement under applicable copyright law, except executing it on a
+ computer or modifying a private copy. Propagation includes copying,
+ distribution (with or without modification and with or without charging
+ a redistribution fee), making available to the public, and in some
+ countries other activities as well.
+ .
+ PERMISSION & CONDITIONS
+ This licence does not grant any rights under trademark law and all such
+ rights are reserved.
+ .
+ Permission is hereby granted, free of charge, to any person obtaining a
+ copy of the Font Software, to propagate the Font Software, subject to
+ the below conditions:
+ .
+ 1) Each copy of the Font Software must contain the above copyright
+ notice and this licence. These can be included either as stand-alone
+ text files, human-readable headers or in the appropriate machine-
+ readable metadata fields within text or binary files as long as those
+ fields can be easily viewed by the user.
+ .
+ 2) The font name complies with the following:
+ (a) The Original Version must retain its name, unmodified.
+ (b) Modified Versions which are Substantially Changed must be renamed to
+ avoid use of the name of the Original Version or similar names entirely.
+ (c) Modified Versions which are not Substantially Changed must be
+ renamed to both (i) retain the name of the Original Version and (ii) add
+ additional naming elements to distinguish the Modified Version from the
+ Original Version. The name of such Modified Versions must be the name of
+ the Original Version, with "derivative X" where X represents the name of
+ the new work, appended to that name.
+ .
+ 3) The name(s) of the Copyright Holder(s) and any contributor to the
+ Font Software shall not be used to promote, endorse or advertise any
+ Modified Version, except (i) as required by this licence, (ii) to
+ acknowledge the contribution(s) of the Copyright Holder(s) or (iii) with
+ their explicit written permission.
+ .
+ 4) The Font Software, modified or unmodified, in part or in whole, must
+ be distributed entirely under this licence, and must not be distributed
+ under any other licence. The requirement for fonts to remain under this
+ licence does not affect any document created using the Font Software,
+ except any version of the Font Software extracted from a document
+ created using the Font Software may only be distributed under this
+ licence.
+ .
+ TERMINATION
+ This licence becomes null and void if any of the above conditions are
+ not met.
+ .
+ DISCLAIMER
+ THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+ COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE
+ COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
+ DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM OTHER
+ DEALINGS IN THE FONT SOFTWARE.
+
+License: Unicode-3.0
+ UNICODE LICENSE V3
+ .
+ COPYRIGHT AND PERMISSION NOTICE
+ .
+ Copyright © 1991-2023 Unicode, Inc.
+ .
+ NOTICE TO USER: Carefully read the following legal agreement. BY
+ DOWNLOADING, INSTALLING, COPYING OR OTHERWISE USING DATA FILES, AND/OR
+ SOFTWARE, YOU UNEQUIVOCALLY ACCEPT, AND AGREE TO BE BOUND BY, ALL OF THE
+ TERMS AND CONDITIONS OF THIS AGREEMENT. IF YOU DO NOT AGREE, DO NOT
+ DOWNLOAD, INSTALL, COPY, DISTRIBUTE OR USE THE DATA FILES OR SOFTWARE.
+ .
+ Permission is hereby granted, free of charge, to any person obtaining a
+ copy of data files and any associated documentation (the "Data Files") or
+ software and any associated documentation (the "Software") to deal in the
+ Data Files or Software without restriction, including without limitation
+ the rights to use, copy, modify, merge, publish, distribute, and/or sell
+ copies of the Data Files or Software, and to permit persons to whom the
+ Data Files or Software are furnished to do so, provided that either (a)
+ this copyright and permission notice appear with all copies of the Data
+ Files or Software, or (b) this copyright and permission notice appear in
+ associated Documentation.
+ .
+ THE DATA FILES AND SOFTWARE ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+ KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+ THIRD PARTY RIGHTS.
+ .
+ IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS INCLUDED IN THIS NOTICE
+ BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT OR CONSEQUENTIAL DAMAGES,
+ OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+ WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THE DATA
+ FILES OR SOFTWARE.
+ .
+ Except as contained in this notice, the name of a copyright holder shall
+ not be used in advertising or otherwise to promote the sale, use or other
+ dealings in these Data Files or Software without prior written
+ authorization of the copyright holder.
+
+License: Unlicense
+ This is free and unencumbered software released into the public domain.
+ .
+ Anyone is free to copy, modify, publish, use, compile, sell, or distribute this software, either in source code form or as a compiled binary, for any purpose, commercial or non-commercial, and by any means.
+ .
+ In jurisdictions that recognize copyright laws, the author or authors of this software dedicate any and all copyright interest in the software to the public domain. We make this dedication for the benefit of the public at large and to the detriment of our heirs and
+ successors. We intend this dedication to be an overt act of relinquishment in perpetuity of all present and future rights to this software under copyright law.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ .
+ For more information, please refer to <http://unlicense.org/>
+
+License: Zlib
+ zlib License
+ .
+ This software is provided 'as-is', without any express or implied warranty.  In no event will the authors be held liable for any damages arising from the use of this software.
+ .
+ Permission is granted to anyone to use this software for any purpose, including commercial applications, and to alter it and redistribute it freely, subject to the following restrictions:
+ .
+      1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+ .
+      2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+ .
+      3. This notice may not be removed or altered from any source distribution.

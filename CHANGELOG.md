@@ -3,6 +3,14 @@
 All notable changes to Seeker are listed here. The format follows
 [Keep a Changelog](https://keepachangelog.com/) and versions follow [SemVer](https://semver.org/).
 
+## [Unreleased]
+
+### Packaging
+- `.deb` for Ubuntu 20.04+ / Debian 11+ built with `cargo deb` and attached to releases.
+- Debian source packaging (`debian/`) for the `ppa:electricstars/seeker` Launchpad PPA, built
+  offline from vendored crates with Ubuntu's `rustc-1.97`; `packaging/make-ppa-source.sh` builds it.
+- Manual page `seeker(1)`.
+
 ## [0.1.1] - 2026-11-11
 
 ### Added
