@@ -18,7 +18,7 @@ use crate::cli::Args;
 use crate::export;
 use crate::platform;
 use crate::search::{self, Event, FileHit, NameMode, SearchHandle, SearchOptions, Stats};
-use crate::{APP_ID, APP_NAME};
+use crate::{APP_ID, APP_NAME, DESKTOP_ID};
 
 const STORAGE_KEY: &str = "form";
 const MAX_ERRORS_KEPT: usize = 2_000;
@@ -366,8 +366,9 @@ impl SeekerApp {
         self.scroll_preview = true;
     }
 
-    fn pick_folders(&self) {
+    fn pick_folders(&self, ctx: &egui::Context) {
         let tx = self.dialog_tx.clone();
+        let ctx = ctx.clone();
         let start = search::parse_roots(&self.form.look_in).into_iter().next();
         std::thread::spawn(move || {
             let mut d = rfd::FileDialog::new().set_title("Choose folders to search");
@@ -377,6 +378,10 @@ impl SeekerApp {
             let t = std::time::Instant::now();
             match d.pick_folders() {
                 Some(f) => {
+                    platform::debug(&format!("folder picker returned {f:?}"));
+                    let f: Vec<PathBuf> =
+                        f.into_iter().map(platform::resolve_portal_path).collect();
+                    platform::debug(&format!("resolved to {f:?}"));
                     let _ = tx.send(DialogResult::Folders(f));
                 }
                 None if t.elapsed() < DIALOG_MIN_TIME => {
@@ -384,11 +389,13 @@ impl SeekerApp {
                 }
                 None => {}
             }
+            ctx.request_repaint();
         });
     }
 
-    fn pick_export(&self, kind: ExportKind) {
+    fn pick_export(&self, kind: ExportKind, ctx: &egui::Context) {
         let tx = self.dialog_tx.clone();
+        let ctx = ctx.clone();
         std::thread::spawn(move || {
             let (name, ext, label) = match kind {
                 ExportKind::Csv => ("seeker-results.csv", "csv", "CSV"),
@@ -402,13 +409,17 @@ impl SeekerApp {
                 .save_file()
             {
                 Some(p) => {
+                    platform::debug(&format!("save dialog returned {p:?}"));
+                    let p = platform::sandbox_doc_path(p);
                     let _ = tx.send(DialogResult::Export(p, kind));
                 }
                 None if t.elapsed() < DIALOG_MIN_TIME => {
+                    platform::debug("save dialog unavailable");
                     let _ = tx.send(DialogResult::Unavailable(Some(kind)));
                 }
                 None => {}
             }
+            ctx.request_repaint();
         });
     }
 
@@ -516,14 +527,14 @@ impl SeekerApp {
                     .add_enabled(has, egui::Button::new("Export results as CSV…"))
                     .clicked()
                 {
-                    self.pick_export(ExportKind::Csv);
+                    self.pick_export(ExportKind::Csv, ui.ctx());
                     ui.close();
                 }
                 if ui
                     .add_enabled(has, egui::Button::new("Export results as text…"))
                     .clicked()
                 {
-                    self.pick_export(ExportKind::Text);
+                    self.pick_export(ExportKind::Text, ui.ctx());
                     ui.close();
                 }
                 ui.separator();
@@ -604,7 +615,7 @@ impl SeekerApp {
                         .on_hover_text("Pick one or more folders")
                         .clicked()
                     {
-                        self.pick_folders();
+                        self.pick_folders(ui.ctx());
                     }
                     ui.checkbox(&mut self.form.recurse, "Subfolders");
                     ui.add_space(8.0);
@@ -881,7 +892,21 @@ impl SeekerApp {
                 RowAction::Folder => self.report(platform::show_in_folder(&p)),
                 RowAction::Terminal => {
                     let dir = p.parent().unwrap_or(&p).to_path_buf();
-                    self.report(platform::open_terminal(&dir));
+                    match platform::open_terminal(&dir) {
+                        Err(e) if e == platform::TERMINAL_UNAVAILABLE => {
+                            // Sandboxed (Flatpak): we can't start host programs,
+                            // so hand the user the path instead.
+                            let cmd = format!("cd {}", shell_quote(&dir.to_string_lossy()));
+                            ui.ctx().copy_text(cmd.clone());
+                            self.message = Some((
+                                format!(
+                                    "Can't open a terminal from the Flatpak sandbox. Copied \"{cmd}\" to the clipboard; paste it into your terminal."
+                                ),
+                                false,
+                            ));
+                        }
+                        r => self.report(r),
+                    }
                 }
                 RowAction::CopyPath => ui.ctx().copy_text(p.to_string_lossy().into_owned()),
                 RowAction::CopyName => ui.ctx().copy_text(
@@ -1081,6 +1106,17 @@ enum RowAction {
     CopyName,
 }
 
+/// Quotes a path for a POSIX shell when needed.
+fn shell_quote(s: &str) -> String {
+    if s.chars()
+        .all(|c| c.is_ascii_alphanumeric() || "/._-+~".contains(c))
+    {
+        s.to_string()
+    } else {
+        format!("'{}'", s.replace('\'', r"'\''"))
+    }
+}
+
 fn format_duration(d: Duration) -> String {
     if d.as_secs_f64() < 1.0 {
         format!("{} ms", d.as_millis())
@@ -1153,7 +1189,7 @@ pub fn run(args: Args) -> Result<(), String> {
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_title(APP_NAME)
-            .with_app_id(APP_ID)
+            .with_app_id(DESKTOP_ID)
             .with_inner_size([1100.0, 760.0])
             .with_min_inner_size([640.0, 420.0]),
         ..Default::default()
@@ -1169,6 +1205,11 @@ pub fn run(args: Args) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn quoting() {
+        assert_eq!(shell_quote("/home/a/b"), "/home/a/b");
+        assert_eq!(shell_quote("/x y/it's"), r"'/x y/it'\''s'");
+    }
     #[test]
     fn counts_have_separators() {
         assert_eq!(format_count(0), "0");

@@ -12,6 +12,7 @@ permissions:
 env:
   CARGO_TERM_COLOR: always
   APP: seeker
+  APP_ID: io.github.ElectricStars.Seeker
   # Link against an old glibc so the binary runs on Ubuntu 20.04+ / Debian 11+ /
   # Zorin 16+ and most other distros from the last few years.
   GLIBC: "2.31"
@@ -38,7 +39,7 @@ jobs:
           DIR="${APP}-${VER}-x86_64-linux"
           mkdir -p "dist/$DIR"
           cp "target/x86_64-unknown-linux-gnu/release/$APP" "dist/$DIR/"
-          cp "assets/$APP.desktop" "assets/$APP.svg" install.sh README.md LICENSE THIRD-PARTY.md "dist/$DIR/"
+          cp "data/$APP_ID.desktop" "data/$APP_ID.svg" "data/$APP_ID.metainfo.xml" install.sh README.md LICENSE THIRD-PARTY.md "dist/$DIR/"
           tar -C dist -czf "dist/$DIR.tar.gz" "$DIR"
           (cd dist && sha256sum "$DIR.tar.gz" > "$DIR.tar.gz.sha256")
       - uses: softprops/action-gh-release@v2

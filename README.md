@@ -133,8 +133,10 @@ over a channel to the egui front end (`src/ui.rs`), which never blocks.
 "Seeker" is a working name, kept in as few places as possible:
 
 1. `Cargo.toml` → `name = "seeker"` (binary name)
-2. `src/main.rs` → `APP_NAME` (display name) and `APP_ID` (settings folder / desktop id)
-3. `assets/seeker.desktop` and `assets/seeker.svg` → rename the files and edit `Name=`, `Exec=`, `Icon=`, `StartupWMClass=`
+2. `src/main.rs` → `APP_NAME` (display name), `APP_ID` (settings folder) and `DESKTOP_ID`
+3. `data/io.github.ElectricStars.Seeker.*` (desktop file, icon, AppStream metainfo) → `Name=` / `<name>`.
+   Changing the application id itself (`io.github.ElectricStars.Seeker`) means renaming these files
+   and is not recommended once the app is published in software stores.
 4. `install.sh` → `APP=seeker`; `.github/workflows/*.yml` → `APP: seeker` and the CLI smoke test
 
 A quick way to find every occurrence: `grep -rni seeker --exclude-dir=target --exclude-dir=.git .`
@@ -145,6 +147,14 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). CI runs `fmt`, `clippy` and tests on eve
 rebuilds monthly with the latest stable Rust. Pushing a tag such as `v0.1.0` builds and
 attaches the Linux release tarball automatically.
 
+## Desktop integration and sandboxing
+
+The application id is `io.github.ElectricStars.Seeker`; the desktop file, icon and AppStream
+metainfo in `data/` use it. When Seeker runs inside a Flatpak sandbox it opens files and folders
+through the desktop's OpenURI portal, and the folder picker and save dialog use the FileChooser
+portal. A sandboxed app can't start programs on the host, so "Open terminal here" copies a
+`cd <folder>` command to the clipboard instead.
+
 ## Credits
 
 - **Eric Allen ([ElectricStars](https://github.com/ElectricStars))** — author and maintainer
@@ -152,6 +162,13 @@ attaches the Linux release tarball automatically.
 - **Inspiration:** [Agent Ransack](https://www.mythicsoft.com/agentransack/) by Mythicsoft.
   Seeker is an independent project, written from scratch, and is not affiliated with
   or endorsed by Mythicsoft.
+
+## AI disclosure
+
+Seeker was written with substantial help from an AI assistant. Grokles (an AI assistant running
+on Grok Bot) wrote essentially all of the code in `src/`, the tests, `install.sh`, the CI and
+release workflows, the desktop file, AppStream metainfo, the icon and the documentation, directed
+and reviewed by Eric Allen, who maintains the project.
 
 ## License
 

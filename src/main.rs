@@ -9,11 +9,14 @@ mod platform;
 mod search;
 mod ui;
 
-/// Display name. To rename the app, change this, `APP_ID`, and the
+/// Display name. To rename the app, change this, `APP_ID`, `DESKTOP_ID` and the
 /// `name` in Cargo.toml (see README "Renaming").
 pub const APP_NAME: &str = "Seeker";
 /// Binary name / desktop-file id / settings folder name.
 pub const APP_ID: &str = "seeker";
+/// Reverse-DNS application id: desktop file, icon, AppStream and Flatpak id.
+/// Wayland compositors use it to match the window to its desktop file.
+pub const DESKTOP_ID: &str = "io.github.ElectricStars.Seeker";
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 fn main() -> std::process::ExitCode {

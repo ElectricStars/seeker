@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (C) 2026 Eric Allen -->
+<component type="desktop-application">
+  <id>io.github.ElectricStars.Seeker</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+
+  <name>Seeker</name>
+  <summary>Find files by name and by the text inside them</summary>
+
+  <developer id="io.github.electricstars">
+    <name>Eric Allen</name>
+  </developer>
+
+  <description>
+    <p>
+      Seeker is a fast desktop search tool for your files. Type a file-name pattern,
+      optionally some text to look for inside the files, pick one or more folders, and
+      results stream in while the search runs.
+    </p>
+    <p>Features:</p>
+    <ul>
+      <li>File-name wildcards such as *.rs;*.txt with exclusions, or regular expressions</li>
+      <li>Search inside files for plain text or regular expressions, with match case and whole-word options</li>
+      <li>Several start folders at once, with folders to skip and optional .gitignore support</li>
+      <li>Filters for hidden files, symbolic links, binary files, file size and modification date</li>
+      <li>Parallel search on all CPU cores that can be stopped at any time</li>
+      <li>Sortable results with a preview of every matching line, highlighted, with context lines</li>
+      <li>Open files and their folders straight from the results, or export them as CSV or text</li>
+      <li>Handles unreadable folders, non-UTF-8 text and very large files gracefully</li>
+    </ul>
+    <p>
+      Seeker uses the same search libraries as the ripgrep command-line tool.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">io.github.ElectricStars.Seeker.desktop</launchable>
+
+  <provides>
+    <binary>seeker</binary>
+  </provides>
+
+  <url type="homepage">https://github.com/ElectricStars/seeker</url>
+  <url type="bugtracker">https://github.com/ElectricStars/seeker/issues</url>
+  <url type="vcs-browser">https://github.com/ElectricStars/seeker</url>
+  <url type="contribute">https://github.com/ElectricStars/seeker/blob/main/CONTRIBUTING.md</url>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>Searching source files for text, with highlighted matches in the preview</caption>
+      <image>https://raw.githubusercontent.com/ElectricStars/seeker/v0.1.1/docs/screenshot.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Opening a result or its folder from the context menu</caption>
+      <image>https://raw.githubusercontent.com/ElectricStars/seeker/v0.1.1/docs/screenshot-actions.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Finding large files by name, size and date</caption>
+      <image>https://raw.githubusercontent.com/ElectricStars/seeker/v0.1.1/docs/screenshot-filters.png</image>
+    </screenshot>
+  </screenshots>
+
+  <categories>
+    <category>Utility</category>
+    <category>FileTools</category>
+  </categories>
+
+  <keywords>
+    <keyword>search</keyword>
+    <keyword>find</keyword>
+    <keyword>find in files</keyword>
+    <keyword>file search</keyword>
+    <keyword>text search</keyword>
+    <keyword>grep</keyword>
+    <keyword>regex</keyword>
+    <keyword>ripgrep</keyword>
+  </keywords>
+
+  <branding>
+    <color type="primary" scheme_preference="light">#99f6e4</color>
+    <color type="primary" scheme_preference="dark">#115e59</color>
+  </branding>
+
+  <requires>
+    <display_length compare="ge">768</display_length>
+  </requires>
+  <supports>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </supports>
+
+  <content_rating type="oars-1.1"/>
+
+  <releases>
+    <release version="0.1.1" date="2026-11-11">
+      <description>
+        <ul>
+          <li>Opening files and folders works inside sandboxes through the desktop portal</li>
+          <li>Desktop file and icon renamed to the application id</li>
+          <li>Added AppStream metadata</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.1.0" date="2026-11-11">
+      <description>
+        <p>First release.</p>
+      </description>
+    </release>
+  </releases>
+</component>

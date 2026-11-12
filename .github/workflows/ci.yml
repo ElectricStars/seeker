@@ -37,3 +37,14 @@ jobs:
           name: ${{ env.APP }}-x86_64-linux-ci
           path: target/release/${{ env.APP }}
           retention-days: 14
+
+  metadata:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install validators
+        run: sudo apt-get update && sudo apt-get install -y appstream desktop-file-utils
+      - name: Validate desktop file
+        run: desktop-file-validate data/io.github.ElectricStars.Seeker.desktop
+      - name: Validate AppStream metainfo
+        run: appstreamcli validate --no-net --explain data/io.github.ElectricStars.Seeker.metainfo.xml

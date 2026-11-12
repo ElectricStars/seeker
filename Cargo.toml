@@ -1,6 +1,6 @@
 [package]
 name = "seeker"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 rust-version = "1.95"
 description = "Fast desktop file search for Linux (name + content), powered by the ripgrep crates and egui"
@@ -13,6 +13,7 @@ keywords = ["search", "grep", "gui", "egui", "files"]
 categories = ["command-line-utilities", "filesystem", "gui"]
 
 [dependencies]
+ashpd = { version = "0.14", default-features = false, features = ["async-io", "open_uri", "documents"] }
 chrono = { version = "0.4.45", features = ["serde"] }
 crossbeam-channel = "0.5.17"
 csv = "1.4.0"
@@ -24,6 +25,7 @@ grep-regex = "0.1.14"
 grep-searcher = "0.1.17"
 ignore = "0.4.34"
 open = "5.4.5"
+pollster = "1.0.1"
 regex = "1.13.1"
 rfd = { version = "0.18", default-features = false, features = ["xdg-portal"] }
 serde = { version = "1.0.229", features = ["derive"] }
