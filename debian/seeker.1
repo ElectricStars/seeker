@@ -33,7 +33,10 @@ Case-sensitive text search.
 Match whole words only.
 .TP
 .BR \-H ", " \-\-hidden
-Include hidden files and folders.
+Include hidden files and folders (the default).
+.TP
+.B \-\-skip\-hidden
+Skip hidden files and folders.
 .TP
 .BR \-g ", " \-\-gitignore
 Respect .gitignore and .ignore files.
@@ -42,14 +45,14 @@ Respect .gitignore and .ignore files.
 Do not search subfolders.
 .TP
 .BR \-L ", " \-\-follow
-Follow symbolic links.
+Enter symbolically linked folders. Symbolic links to files are always listed.
 .TP
 .BR \-b ", " \-\-binary
 Also search binary files.
 .TP
 .BR \-x ", " \-\-exclude " " \fILIST\fR
 Folders to skip, separated by semicolons
-(default: .git;node_modules;target;__pycache__).
+(default: none; wildcards allowed, e.g. .git;node_modules).
 .TP
 .BR \-C ", " \-\-context " " \fIN\fR
 Context lines shown in the preview.

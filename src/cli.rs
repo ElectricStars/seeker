@@ -26,6 +26,7 @@ pub struct Args {
     pub case_sensitive: bool,
     pub word: bool,
     pub hidden: bool,
+    pub skip_hidden: bool,
     pub gitignore: bool,
     pub no_recurse: bool,
     pub follow: bool,
@@ -46,12 +47,13 @@ Options:\n\
   -e, --regex            treat --text as a regular expression\n\
   -s, --case             case-sensitive text search\n\
   -w, --word             whole words only\n\
-  -H, --hidden           include hidden files and folders\n\
+  -H, --hidden           include hidden files and folders (the default)\n\
+      --skip-hidden      skip hidden files and folders\n\
   -g, --gitignore        respect .gitignore / .ignore files\n\
       --no-recurse       do not search subfolders\n\
   -L, --follow           follow symbolic links\n\
   -b, --binary           also search binary files\n\
-  -x, --exclude LIST     folders to skip, ';'-separated (default: .git;node_modules;target;__pycache__)\n\
+  -x, --exclude LIST     folders to skip, ';'-separated (default: none)\n\
   -C, --context N        context lines (GUI preview)\n\
   -l, --files-only       CLI: print only file paths\n\
       --auto             GUI: start searching immediately\n\
@@ -87,6 +89,7 @@ impl Args {
                 "-s" | "--case" => a.case_sensitive = true,
                 "-w" | "--word" => a.word = true,
                 "-H" | "--hidden" => a.hidden = true,
+                "--skip-hidden" | "--no-hidden" => a.skip_hidden = true,
                 "-g" | "--gitignore" => a.gitignore = true,
                 "--no-recurse" => a.no_recurse = true,
                 "-L" | "--follow" => a.follow = true,
@@ -125,7 +128,7 @@ impl Args {
             content_is_regex: self.regex,
             case_sensitive: self.case_sensitive,
             whole_word: self.word,
-            include_hidden: self.hidden,
+            include_hidden: self.hidden || !self.skip_hidden,
             respect_gitignore: self.gitignore,
             recurse: !self.no_recurse,
             follow_symlinks: self.follow,
@@ -198,5 +201,9 @@ mod tests {
         let o = p(&["-x", "a;b", "--binary", "/"]).unwrap().to_options();
         assert_eq!(o.exclude_dirs, ["a", "b"]);
         assert!(!o.skip_binary);
+        // Hidden files are searched unless --skip-hidden is given.
+        assert!(o.include_hidden);
+        assert!(!p(&["--skip-hidden"]).unwrap().to_options().include_hidden);
+        assert!(p(&[]).unwrap().to_options().exclude_dirs.is_empty());
     }
 }

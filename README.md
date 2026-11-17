@@ -18,8 +18,9 @@ no Qt, GTK or Python needed.
 - **Containing text**: plain text or regex, match case, whole word.
 - **Several start folders** at once (separate with `;`, `~` works), native folder picker,
   subfolders on/off.
-- **Filters**: exclude folders (default `.git;node_modules;target;__pycache__`, wildcards allowed),
-  respect `.gitignore`/`.ignore`, include hidden files, follow symlinks, skip binary files,
+- **Searches everything by default**, hidden files included. Optional filters: exclude folders
+  (e.g. `.git;node_modules`, wildcards allowed), respect `.gitignore`/`.ignore`, skip hidden files,
+  follow symlinked folders, skip binary files,
   size range (`10K`, `5M`, `1.5G`), modified-date range (`YYYY-MM-DD`).
 - **Fast and responsive**: parallel directory walk on all CPU cores, results stream in while
   the search runs, **Stop** button / **Esc** to cancel, live counters in the status bar.
@@ -29,7 +30,10 @@ no Qt, GTK or Python needed.
 - **Right-click**: open, open containing folder (selects the file in Files/Nautilus),
   open terminal here, copy path / name. Double-click opens the file.
 - **Export** results to CSV or plain text.
-- Remembers your last search settings.
+- **Settings** (menu *Settings*): light, dark or custom background color with automatic
+  readable text color; interface and preview fonts (built-in or any installed font), text size
+  and interface scale.
+- Remembers your last search and your settings.
 - Copes with permission errors (listed, not fatal), non-UTF-8 and UTF-16 (BOM) files,
   huge files and very long lines. Skips `/proc`, `/sys`, `/dev` and `/run` when searching `/`.
 - **Terminal mode**: `seeker --cli` prints `path:line:text`, handy for scripts.

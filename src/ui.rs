@@ -9,7 +9,7 @@ use std::time::Duration;
 
 use crossbeam_channel::{Receiver, Sender};
 use eframe::egui::{
-    self, Align, Color32, FontId, Key, Layout, RichText, Sense, TextFormat, text::LayoutJob,
+    self, Align, Color32, Key, Layout, RichText, Sense, TextFormat, text::LayoutJob,
 };
 use egui_extras::{Column, TableBuilder};
 use serde::{Deserialize, Serialize};
@@ -18,15 +18,27 @@ use crate::cli::Args;
 use crate::export;
 use crate::platform;
 use crate::search::{self, Event, FileHit, NameMode, SearchHandle, SearchOptions, Stats};
+use crate::settings::{self, LoadedFonts, Settings, SettingsWindow, Tab};
 use crate::{APP_ID, APP_NAME, DESKTOP_ID};
 
 const STORAGE_KEY: &str = "form";
+const SETTINGS_KEY: &str = "settings";
+/// Bumped when form defaults change in a way saved forms should pick up.
+/// 2 (0.1.2): hidden files searched and no folders excluded by default.
+const FORM_VERSION: u32 = 2;
+
+fn legacy_form_version() -> u32 {
+    1
+}
 const MAX_ERRORS_KEPT: usize = 2_000;
 
 /// Everything typed into the search form. Persisted between runs.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
 struct Form {
+    /// Missing in forms saved before 0.1.2.
+    #[serde(default = "legacy_form_version")]
+    form_version: u32,
     name_pattern: String,
     name_mode: NameMode,
     content: String,
@@ -52,6 +64,7 @@ impl Default for Form {
     fn default() -> Self {
         let d = SearchOptions::default();
         Self {
+            form_version: FORM_VERSION,
             name_pattern: String::new(),
             name_mode: NameMode::Wildcard,
             content: String::new(),
@@ -76,6 +89,20 @@ impl Default for Form {
 }
 
 impl Form {
+    /// Moves a form saved by an older version to the current defaults where
+    /// the user hadn't changed them.
+    fn migrate(&mut self) {
+        if self.form_version < 2 {
+            // 0.1.0/0.1.1 skipped hidden files and these folders by default,
+            // which hid files people expected to find (issue #3).
+            self.include_hidden = true;
+            if self.exclude_dirs.trim() == search::OLD_DEFAULT_EXCLUDES {
+                self.exclude_dirs.clear();
+            }
+        }
+        self.form_version = FORM_VERSION;
+    }
+
     fn to_options(&self) -> Result<SearchOptions, String> {
         Ok(SearchOptions {
             roots: search::parse_roots(&self.look_in),
@@ -132,6 +159,9 @@ impl Form {
             self.exclude_dirs = x.clone();
         }
         self.include_hidden |= a.hidden;
+        if a.skip_hidden {
+            self.include_hidden = false;
+        }
         self.respect_gitignore |= a.gitignore;
         self.follow_symlinks |= a.follow;
         if a.binary {
@@ -190,21 +220,26 @@ pub struct SeekerApp {
     dialog_tx: Sender<DialogResult>,
     dialog_rx: Receiver<DialogResult>,
     focus_name: bool,
+    applied_theme_key: Option<bool>,
+    settings: Settings,
+    /// Settings currently applied to the egui context.
+    applied: Option<Settings>,
+    loaded_fonts: LoadedFonts,
+    settings_win: SettingsWindow,
 }
 
 impl SeekerApp {
     fn new(cc: &eframe::CreationContext<'_>, args: Args) -> Self {
-        // Use the bundled Hack font as a fallback so symbols like ▲▼ render.
-        let mut fonts = egui::FontDefinitions::default();
-        if let Some(fam) = fonts.families.get_mut(&egui::FontFamily::Proportional) {
-            fam.insert(1.min(fam.len()), "Hack".to_owned());
-        }
-        cc.egui_ctx.set_fonts(fonts);
         let mut form: Form = cc
             .storage
             .and_then(|s| eframe::get_value(s, STORAGE_KEY))
             .unwrap_or_default();
+        form.migrate();
         form.apply_args(&args);
+        let settings: Settings = cc
+            .storage
+            .and_then(|s| eframe::get_value(s, SETTINGS_KEY))
+            .unwrap_or_default();
         let (dialog_tx, dialog_rx) = crossbeam_channel::unbounded();
         Self {
             form,
@@ -225,6 +260,105 @@ impl SeekerApp {
             dialog_tx,
             dialog_rx,
             focus_name: true,
+            applied_theme_key: None,
+            settings,
+            applied: None,
+            loaded_fonts: LoadedFonts::default(),
+            settings_win: SettingsWindow::default(),
+        }
+        .with_settings_applied(&cc.egui_ctx)
+    }
+
+    fn with_settings_applied(mut self, ctx: &egui::Context) -> Self {
+        self.apply_settings(ctx);
+        self
+    }
+
+    /// Applies changed settings (theme, colors, fonts, sizes, zoom) to egui.
+    fn apply_settings(&mut self, ctx: &egui::Context) {
+        let s = &mut self.settings;
+        s.font_size = s
+            .font_size
+            .clamp(settings::MIN_FONT_SIZE, settings::MAX_FONT_SIZE);
+        s.ui_scale = s.ui_scale.clamp(settings::MIN_SCALE, settings::MAX_SCALE);
+        // Ctrl +/- zoom changes egui's zoom directly; adopt it as the setting.
+        if let Some(a) = &self.applied
+            && (a.ui_scale - s.ui_scale).abs() < 1e-4
+            && (ctx.zoom_factor() - a.ui_scale).abs() > 1e-4
+        {
+            s.ui_scale = ctx
+                .zoom_factor()
+                .clamp(settings::MIN_SCALE, settings::MAX_SCALE);
+        }
+        let system_dark = ctx.system_theme() == Some(egui::Theme::Dark);
+        let theme_key = (s.theme == settings::ThemeChoice::System).then_some(system_dark);
+        if self.applied.as_ref() == Some(s) && self.applied_theme_key == theme_key {
+            return;
+        }
+        let errs = self.loaded_fonts.refresh(s);
+        if !errs.is_empty() {
+            self.message = Some((errs.join("; "), true));
+        }
+        let s = &self.settings;
+        let fonts_changed = self
+            .applied
+            .as_ref()
+            .is_none_or(|a| a.ui_font != s.ui_font || a.mono_font != s.mono_font);
+        if fonts_changed {
+            ctx.set_fonts(s.font_definitions(&self.loaded_fonts));
+        }
+        let visuals = s.visuals(system_dark);
+        let theme = if visuals.dark_mode {
+            egui::Theme::Dark
+        } else {
+            egui::Theme::Light
+        };
+        ctx.set_theme(theme);
+        ctx.set_visuals_of(theme, visuals);
+        ctx.all_styles_mut(|st| s.apply_style(st));
+        if (ctx.zoom_factor() - s.ui_scale).abs() > 1e-4 {
+            ctx.set_zoom_factor(s.ui_scale);
+        }
+        if self.applied.is_some() {
+            // eframe saves every 30 s, but only while frames are drawn: make
+            // sure one is drawn after a change so it is saved even if idle.
+            ctx.request_repaint_after(Duration::from_secs(31));
+        }
+        self.applied = Some(s.clone());
+        self.applied_theme_key = theme_key;
+    }
+
+    /// Width unit that follows the chosen text size (1.0 at egui's 13 pt).
+    fn k(ui: &egui::Ui) -> f32 {
+        egui::TextStyle::Body.resolve(ui.style()).size / 13.0
+    }
+
+    /// "No matching files", plus which form fields narrowed the search.
+    fn no_match_message(&self) -> String {
+        let f = &self.form;
+        let mut why = Vec::new();
+        if !f.content.is_empty() {
+            why.push(format!(
+                "only files containing \"{}\" are listed (clear \"Containing text\" to search by name only)",
+                f.content
+            ));
+        }
+        if !f.include_hidden {
+            why.push("hidden files are skipped".into());
+        }
+        if f.respect_gitignore {
+            why.push(".gitignore rules are applied".into());
+        }
+        if !f.exclude_dirs.trim().is_empty() {
+            why.push(format!("folders skipped: {}", f.exclude_dirs.trim()));
+        }
+        if !f.recurse {
+            why.push("subfolders are not searched".into());
+        }
+        if why.is_empty() {
+            "No matching files.".into()
+        } else {
+            format!("No matching files.\nNote: {}.", why.join("; "))
         }
     }
 
@@ -547,6 +681,16 @@ impl SeekerApp {
                     ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
                 }
             });
+            ui.menu_button("Settings", |ui| {
+                if ui.button("Appearance…").clicked() {
+                    self.settings_win.open_at(Tab::Appearance);
+                    ui.close();
+                }
+                if ui.button("Font and size…").clicked() {
+                    self.settings_win.open_at(Tab::Font);
+                    ui.close();
+                }
+            });
             ui.menu_button("Help", |ui| {
                 if ui.button(format!("About {APP_NAME}")).clicked() {
                     self.show_about = true;
@@ -558,6 +702,7 @@ impl SeekerApp {
 
     fn search_form(&mut self, ui: &mut egui::Ui) {
         let running = self.is_running();
+        let k = Self::k(ui);
         egui::Grid::new("form")
             .num_columns(2)
             .spacing([8.0, 6.0])
@@ -567,14 +712,14 @@ impl SeekerApp {
                     let r = ui.add(
                         egui::TextEdit::singleline(&mut self.form.name_pattern)
                             .hint_text("e.g. *.rs;*.toml;!*.lock   (empty = all files)")
-                            .desired_width(ui.available_width() - 150.0),
+                            .desired_width(ui.available_width() - 150.0 * k),
                     );
                     if self.focus_name {
                         r.request_focus();
                         self.focus_name = false;
                     }
                     egui::ComboBox::from_id_salt("name_mode")
-                        .width(120.0)
+                        .width(120.0 * k)
                         .selected_text(match self.form.name_mode {
                             NameMode::Wildcard => "Wildcards",
                             NameMode::Regex => "Regex",
@@ -595,7 +740,7 @@ impl SeekerApp {
                     ui.add(
                         egui::TextEdit::singleline(&mut self.form.content)
                             .hint_text("text to find inside files (empty = name search only)")
-                            .desired_width(ui.available_width() - 290.0),
+                            .desired_width(ui.available_width() - 290.0 * k),
                     );
                     ui.checkbox(&mut self.form.content_regex, "Regex");
                     ui.checkbox(&mut self.form.case_sensitive, "Match case");
@@ -608,7 +753,7 @@ impl SeekerApp {
                     ui.add(
                         egui::TextEdit::singleline(&mut self.form.look_in)
                             .hint_text("folders, separated by ;")
-                            .desired_width(ui.available_width() - 290.0),
+                            .desired_width(ui.available_width() - 290.0 * k),
                     );
                     if ui
                         .button("Browse…")
@@ -623,7 +768,7 @@ impl SeekerApp {
                         if ui
                             .add(
                                 egui::Button::new(RichText::new("Stop").strong())
-                                    .min_size([80.0, 0.0].into()),
+                                    .min_size([80.0 * k, 0.0].into()),
                             )
                             .on_hover_text("Esc")
                             .clicked()
@@ -633,7 +778,7 @@ impl SeekerApp {
                     } else if ui
                         .add(
                             egui::Button::new(RichText::new("Search").strong())
-                                .min_size([80.0, 0.0].into()),
+                                .min_size([80.0 * k, 0.0].into()),
                         )
                         .on_hover_text("Enter")
                         .clicked()
@@ -661,34 +806,34 @@ impl SeekerApp {
                     ui.label("Exclude folders:");
                     ui.add(
                         egui::TextEdit::singleline(&mut self.form.exclude_dirs)
-                            .hint_text(".git;node_modules")
-                            .desired_width(260.0),
+                            .hint_text("none (e.g. .git;node_modules)")
+                            .desired_width(260.0 * k),
                     );
                     ui.separator();
                     ui.label("Size:");
                     ui.add(
                         egui::TextEdit::singleline(&mut self.form.min_size)
                             .hint_text("min, e.g. 10K")
-                            .desired_width(90.0),
+                            .desired_width(110.0 * k),
                     );
                     ui.label("–");
                     ui.add(
                         egui::TextEdit::singleline(&mut self.form.max_size)
                             .hint_text("max, e.g. 5M")
-                            .desired_width(90.0),
+                            .desired_width(110.0 * k),
                     );
                     ui.separator();
                     ui.label("Modified:");
                     ui.add(
                         egui::TextEdit::singleline(&mut self.form.modified_after)
                             .hint_text("from YYYY-MM-DD")
-                            .desired_width(110.0),
+                            .desired_width(130.0 * k),
                     );
                     ui.label("–");
                     ui.add(
                         egui::TextEdit::singleline(&mut self.form.modified_before)
                             .hint_text("to YYYY-MM-DD")
-                            .desired_width(110.0),
+                            .desired_width(130.0 * k),
                     );
                 });
             });
@@ -754,16 +899,17 @@ impl SeekerApp {
         let scroll_to = self.scroll_table.then_some(self.selected).flatten();
         self.scroll_table = false;
         let has_content = self.results.iter().any(|h| h.hit_lines > 0);
+        let k = Self::k(ui);
 
         let mut tb = TableBuilder::new(ui)
             .striped(true)
             .resizable(true)
             .sense(Sense::click())
             .cell_layout(Layout::left_to_right(Align::Center))
-            .column(Column::initial(220.0).at_least(80.0).clip(true))
-            .column(Column::initial(380.0).at_least(80.0).clip(true))
-            .column(Column::initial(80.0).at_least(50.0))
-            .column(Column::initial(130.0).at_least(80.0))
+            .column(Column::initial(220.0 * k).at_least(80.0).clip(true))
+            .column(Column::initial(380.0 * k).at_least(80.0).clip(true))
+            .column(Column::initial(80.0 * k).at_least(50.0))
+            .column(Column::initial(130.0 * k).at_least(80.0))
             .column(Column::remainder().at_least(50.0))
             .min_scrolled_height(0.0)
             .max_scroll_height(f32::INFINITY);
@@ -972,7 +1118,7 @@ impl SeekerApp {
             return;
         }
 
-        let font = FontId::monospace(13.0);
+        let font = egui::TextStyle::Monospace.resolve(ui.style());
         let row_h = ui.fonts_mut(|f| f.row_height(&font)) + 2.0;
         let current_line = hit_idx.get(self.current_hit).copied();
         let max_no = h.lines.iter().map(|l| l.number).max().unwrap_or(1);
@@ -1140,6 +1286,7 @@ fn format_count(n: u64) -> String {
 impl eframe::App for SeekerApp {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         let ctx = ui.ctx().clone();
+        self.apply_settings(&ctx);
         if self.auto_start {
             self.auto_start = false;
             self.start_search(&ctx);
@@ -1165,12 +1312,13 @@ impl eframe::App for SeekerApp {
                 .show(ui, |ui| self.preview(ui));
             egui::CentralPanel::no_frame().show(ui, |ui| {
                 if self.results.is_empty() && !self.is_running() {
+                    let msg = if self.last_stats.is_some() {
+                        self.no_match_message()
+                    } else {
+                        String::new()
+                    };
                     ui.centered_and_justified(|ui| {
-                        ui.weak(if self.last_stats.is_some() {
-                            "No matching files."
-                        } else {
-                            ""
-                        });
+                        ui.weak(msg);
                     });
                 } else {
                     self.results_table(ui);
@@ -1178,10 +1326,16 @@ impl eframe::App for SeekerApp {
             });
         });
         self.windows(&ctx);
+        self.settings_win.show(&ctx, &mut self.settings);
+        if self.applied.as_ref() != Some(&self.settings) {
+            // Changed in the Settings window: apply on the next frame.
+            ctx.request_repaint();
+        }
     }
 
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
         eframe::set_value(storage, STORAGE_KEY, &self.form);
+        eframe::set_value(storage, SETTINGS_KEY, &self.settings);
     }
 }
 
@@ -1190,7 +1344,7 @@ pub fn run(args: Args) -> Result<(), String> {
         viewport: egui::ViewportBuilder::default()
             .with_title(APP_NAME)
             .with_app_id(DESKTOP_ID)
-            .with_inner_size([1100.0, 760.0])
+            .with_inner_size([1240.0, 840.0])
             .with_min_inner_size([640.0, 420.0]),
         ..Default::default()
     };
@@ -1217,6 +1371,29 @@ mod tests {
         assert_eq!(format_count(1000), "1,000");
         assert_eq!(format_count(1234567), "1,234,567");
     }
+    #[test]
+    fn old_saved_form_is_migrated() {
+        // A form saved by 0.1.1 (no form_version, old defaults).
+        let old = r#"(name_pattern: "*.md", include_hidden: false, exclude_dirs: ".git;node_modules;target;__pycache__")"#;
+        let mut f: Form = ron::from_str(old).unwrap();
+        assert_eq!(f.form_version, 1);
+        f.migrate();
+        assert!(f.include_hidden);
+        assert!(f.exclude_dirs.is_empty());
+        assert_eq!(f.name_pattern, "*.md");
+        // A custom exclude list is kept.
+        let mut f: Form = ron::from_str(r#"(exclude_dirs: "build")"#).unwrap();
+        f.migrate();
+        assert_eq!(f.exclude_dirs, "build");
+        // Choices made in 0.1.2 or later are left alone.
+        let mut f = Form {
+            include_hidden: false,
+            ..Default::default()
+        };
+        f.migrate();
+        assert!(!f.include_hidden);
+    }
+
     #[test]
     fn form_roundtrip_to_options() {
         let mut f = Form {
