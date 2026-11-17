@@ -51,8 +51,12 @@ Enter symbolically linked folders. Symbolic links to files are always listed.
 Also search binary files.
 .TP
 .BR \-x ", " \-\-exclude " " \fILIST\fR
-Folders to skip, separated by semicolons
+In terminal mode, folders not to enter, separated by semicolons
 (default: none; wildcards allowed, e.g. .git;node_modules).
+.TP
+.B \-\-type \fIf\fR|\fId\fR|\fIboth\fR
+List matching files (\fIf\fR), folders (\fId\fR) or both (the default).
+Folder names are matched by \fB\-\-name\fR. Text searches list files only.
 .TP
 .BR \-C ", " \-\-context " " \fIN\fR
 Context lines shown in the preview.

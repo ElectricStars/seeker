@@ -13,18 +13,20 @@ no Qt, GTK or Python needed.
 
 ## Features
 
+- **Files, folders or both**: *Include Files* and *Include Folders* choose what is listed;
+  folder names are matched by the same pattern (text searches list files only).
 - **File name search** with wildcards (`*.rs;*.toml;!*.lock`, case-insensitive; a bare word
   like `report` means "name contains report") or a **regular expression**.
 - **Containing text**: plain text or regex, match case, whole word.
 - **Several start folders** at once (separate with `;`, `~` works), native folder picker,
   subfolders on/off.
-- **Searches everything by default**, hidden files included. Optional filters: exclude folders
-  (e.g. `.git;node_modules`, wildcards allowed), respect `.gitignore`/`.ignore`, skip hidden files,
-  follow symlinked folders, skip binary files,
+- **Searches everything by default**, hidden files included. Optional filters: respect
+  `.gitignore`/`.ignore`, skip hidden files, follow symlinked folders, skip binary files,
   size range (`10K`, `5M`, `1.5G`), modified-date range (`YYYY-MM-DD`).
 - **Fast and responsive**: parallel directory walk on all CPU cores, results stream in while
   the search runs, **Stop** button / **Esc** to cancel, live counters in the status bar.
-- **Results table**: name, folder, size, modified, hit count, click headers to sort.
+- **Results table**: a folder or file icon, name, folder, size, modified, hit count; click
+  headers to sort.
 - **Preview pane**: matching lines with line numbers, highlighted hits, configurable context
   lines, Prev/Next hit (F3 / Shift+F3).
 - **Right-click**: open, open containing folder (selects the file in Files/Nautilus),
@@ -47,6 +49,8 @@ no Qt, GTK or Python needed.
 | Esc | Stop search |
 | F3 / Shift+F3 | Next / previous hit in the preview |
 | ↑ / ↓ | Move through results (when no text box has focus) |
+| Page Up / Page Down | Move a screenful through results |
+| Home / End | First / last result |
 | Ctrl+F | Focus the file-name box |
 
 ## Install with apt (Ubuntu, Zorin, Mint, Debian)

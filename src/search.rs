@@ -51,6 +51,10 @@ pub struct SearchOptions {
     pub case_sensitive: bool,
     pub whole_word: bool,
     pub recurse: bool,
+    /// List files whose name matches.
+    pub include_files: bool,
+    /// List folders whose name matches (never when searching for text).
+    pub include_folders: bool,
     /// Folder names (wildcards allowed) that are never entered.
     pub exclude_dirs: Vec<String>,
     pub respect_gitignore: bool,
@@ -80,6 +84,8 @@ impl Default for SearchOptions {
             case_sensitive: false,
             whole_word: false,
             recurse: true,
+            include_files: true,
+            include_folders: true,
             exclude_dirs: default_excludes(),
             respect_gitignore: false,
             include_hidden: true,
@@ -100,10 +106,6 @@ impl Default for SearchOptions {
 pub fn default_excludes() -> Vec<String> {
     Vec::new()
 }
-
-/// The exclude list used by 0.1.0 and 0.1.1, kept so saved settings that still
-/// hold it can be moved to the new default.
-pub const OLD_DEFAULT_EXCLUDES: &str = ".git;node_modules;target;__pycache__";
 
 /// Removes one pair of matching quotes around a pattern: `"*.md"` -> `*.md`.
 fn unquote(s: &str) -> &str {
@@ -164,6 +166,8 @@ pub struct Line {
 #[derive(Debug, Clone)]
 pub struct FileHit {
     pub path: PathBuf,
+    /// True for a folder (its size is 0 and it has no lines).
+    pub is_dir: bool,
     pub size: u64,
     pub modified: Option<SystemTime>,
     /// Number of individual matches in the file (0 for name-only searches).
@@ -568,6 +572,15 @@ fn prepare(
             return Err(format!("Folder does not exist: {}", r.display()));
         }
     }
+    if !opts.include_files && !opts.include_folders {
+        return Err("Turn on Include Files, Include Folders, or both.".into());
+    }
+    if !opts.include_files && !opts.content.is_empty() {
+        return Err(
+            "Folders have no text to search. Turn on Include Files or clear \"Containing text\"."
+                .into(),
+        );
+    }
     let name = NameFilter::new(&opts.name_pattern, opts.name_mode)?;
     let content = ContentMatcher::new(opts)?;
     let excludes = build_exclude_set(opts)?;
@@ -645,7 +658,17 @@ pub fn run(
             // A symlink to a file is listed like a file. "Follow symlinks" only
             // controls whether symlinked folders are entered (by the walker).
             let is_file = ft.is_file() || (ft.is_symlink() && entry.path().is_file());
-            if !is_file {
+            // Folders below a root, including symlinks to folders. Folders have no
+            // text, so they are only listed for name searches.
+            let is_dir = !is_file
+                && entry.depth() > 0
+                && (ft.is_dir() || (ft.is_symlink() && entry.path().is_dir()));
+            let wanted = if is_file {
+                opts.include_files
+            } else {
+                is_dir && opts.include_folders && content.is_none()
+            };
+            if !wanted {
                 return WalkState::Continue;
             }
             let path = entry.path();
@@ -661,7 +684,11 @@ pub fn run(
                     return WalkState::Continue;
                 }
             };
-            let size = meta.len();
+            let size = if is_dir { 0 } else { meta.len() };
+            if is_dir && (opts.min_size.is_some() || opts.max_size.is_some()) {
+                // A size limit only makes sense for files.
+                return WalkState::Continue;
+            }
             if opts.min_size.is_some_and(|m| size < m) || opts.max_size.is_some_and(|m| size > m) {
                 return WalkState::Continue;
             }
@@ -680,6 +707,7 @@ pub fn run(
 
             let mut hit = FileHit {
                 path: path.to_path_buf(),
+                is_dir,
                 size,
                 modified,
                 hits: 0,
@@ -687,7 +715,7 @@ pub fn run(
                 lines: Vec::new(),
                 truncated: false,
             };
-            if let Some(m) = content {
+            if let Some(m) = content.filter(|_| !is_dir) {
                 match search_file(&mut searcher, m, path, opts.skip_binary, &cancel) {
                     Ok(Some(r)) => {
                         hit.hits = r.hits;
@@ -947,6 +975,77 @@ mod tests {
 
     /// Issue #3: "*.md" must find every .md file under the folder by default,
     /// wherever it is and whatever kind of directory entry it is.
+    #[test]
+    fn include_files_and_folders() {
+        let dir = fixture();
+        let p = dir.path();
+        fs::create_dir_all(p.join("src/notes_dir")).unwrap();
+        let base = SearchOptions {
+            roots: vec![p.to_path_buf()],
+            name_pattern: "*n*".into(),
+            ..Default::default()
+        };
+        // Both (the default): files and folders whose name matches.
+        let (h, _) = search(&base);
+        let both = names(&h, p);
+        assert!(both.contains(&"src/main.rs".to_string()), "{both:?}");
+        assert!(both.contains(&"src/nested".to_string()), "{both:?}");
+        assert!(both.contains(&"src/notes_dir".to_string()), "{both:?}");
+        assert!(both.contains(&"notes.txt".to_string()), "{both:?}");
+        let dirs: Vec<_> = h.iter().filter(|h| h.is_dir).collect();
+        assert!(dirs.iter().all(|h| h.path.is_dir() && h.size == 0));
+        // The root itself is never listed.
+        assert!(h.iter().all(|h| h.path != p));
+
+        // Folders only.
+        let (h, _) = search(&SearchOptions {
+            include_files: false,
+            ..base.clone()
+        });
+        let only = names(&h, p);
+        assert!(h.iter().all(|h| h.is_dir), "{only:?}");
+        assert!(only.contains(&"src/nested".to_string()));
+        assert!(only.contains(&"node_modules".to_string()));
+        assert!(!only.contains(&"src".to_string()), "src has no 'n'");
+
+        // Files only.
+        let (h, _) = search(&SearchOptions {
+            include_folders: false,
+            ..base.clone()
+        });
+        assert!(h.iter().all(|h| !h.is_dir));
+        assert!(names(&h, p).contains(&"src/main.rs".to_string()));
+
+        // Text searches never list folders.
+        let (h, _) = search(&SearchOptions {
+            name_pattern: String::new(),
+            content: "hello".into(),
+            ..base.clone()
+        });
+        assert!(!h.is_empty() && h.iter().all(|h| !h.is_dir));
+
+        // A size limit only applies to files, so folders drop out.
+        let (h, _) = search(&SearchOptions {
+            min_size: Some(1),
+            ..base.clone()
+        });
+        assert!(h.iter().all(|h| !h.is_dir));
+
+        // Neither, or folders-only with text, is an error.
+        let none = SearchOptions {
+            include_files: false,
+            include_folders: false,
+            ..base.clone()
+        };
+        assert!(run(&none, &Default::default(), &Default::default(), |_| {}).is_err());
+        let bad = SearchOptions {
+            include_files: false,
+            content: "x".into(),
+            ..base
+        };
+        assert!(run(&bad, &Default::default(), &Default::default(), |_| {}).is_err());
+    }
+
     #[test]
     fn star_md_finds_every_md_file_by_default() {
         let dir = tempfile::tempdir().unwrap();

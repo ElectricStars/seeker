@@ -25,7 +25,8 @@ const STORAGE_KEY: &str = "form";
 const SETTINGS_KEY: &str = "settings";
 /// Bumped when form defaults change in a way saved forms should pick up.
 /// 2 (0.1.2): hidden files searched and no folders excluded by default.
-const FORM_VERSION: u32 = 2;
+/// 3 (0.1.2): "Exclude folders" replaced by Include Files / Include Folders.
+const FORM_VERSION: u32 = 3;
 
 fn legacy_form_version() -> u32 {
     1
@@ -47,7 +48,10 @@ struct Form {
     whole_word: bool,
     look_in: String,
     recurse: bool,
-    exclude_dirs: String,
+    /// List matching files.
+    include_files: bool,
+    /// List matching folders (name searches only).
+    include_folders: bool,
     respect_gitignore: bool,
     include_hidden: bool,
     follow_symlinks: bool,
@@ -73,7 +77,8 @@ impl Default for Form {
             whole_word: false,
             look_in: std::env::var("HOME").unwrap_or_else(|_| "/".into()),
             recurse: d.recurse,
-            exclude_dirs: d.exclude_dirs.join(";"),
+            include_files: d.include_files,
+            include_folders: d.include_folders,
             respect_gitignore: d.respect_gitignore,
             include_hidden: d.include_hidden,
             follow_symlinks: d.follow_symlinks,
@@ -93,12 +98,18 @@ impl Form {
     /// the user hadn't changed them.
     fn migrate(&mut self) {
         if self.form_version < 2 {
-            // 0.1.0/0.1.1 skipped hidden files and these folders by default,
-            // which hid files people expected to find (issue #3).
+            // 0.1.0/0.1.1 skipped hidden files by default, which hid files
+            // people expected to find (issue #3).
             self.include_hidden = true;
-            if self.exclude_dirs.trim() == search::OLD_DEFAULT_EXCLUDES {
-                self.exclude_dirs.clear();
-            }
+        }
+        if self.form_version < 3 {
+            // The old "Exclude folders" list is no longer in the window (#8); it
+            // is dropped when the form loads. Files and folders are both listed.
+            self.include_files = true;
+            self.include_folders = true;
+        }
+        if !self.include_files && !self.include_folders {
+            self.include_files = true;
         }
         self.form_version = FORM_VERSION;
     }
@@ -113,12 +124,9 @@ impl Form {
             case_sensitive: self.case_sensitive,
             whole_word: self.whole_word,
             recurse: self.recurse,
-            exclude_dirs: self
-                .exclude_dirs
-                .split(';')
-                .map(|s| s.trim().to_string())
-                .filter(|s| !s.is_empty())
-                .collect(),
+            include_files: self.include_files,
+            include_folders: self.include_folders,
+            exclude_dirs: Vec::new(),
             respect_gitignore: self.respect_gitignore,
             include_hidden: self.include_hidden,
             follow_symlinks: self.follow_symlinks,
@@ -155,8 +163,9 @@ impl Form {
         if let Some(c) = a.context {
             self.context_lines = c;
         }
-        if let Some(x) = &a.exclude {
-            self.exclude_dirs = x.clone();
+        if let Some((files, folders)) = a.types {
+            self.include_files = files;
+            self.include_folders = folders;
         }
         self.include_hidden |= a.hidden;
         if a.skip_hidden {
@@ -210,6 +219,8 @@ pub struct SeekerApp {
     current_hit: usize,
     scroll_preview: bool,
     scroll_table: bool,
+    /// Rows that fit in the results table (for Page Up / Page Down).
+    page_rows: usize,
     search: Option<SearchHandle>,
     last_stats: Option<Stats>,
     errors: Vec<String>,
@@ -260,6 +271,7 @@ impl SeekerApp {
             current_hit: 0,
             scroll_preview: false,
             scroll_table: false,
+            page_rows: 10,
             search: None,
             last_stats: None,
             errors: Vec::new(),
@@ -354,16 +366,18 @@ impl SeekerApp {
         if f.respect_gitignore {
             why.push(".gitignore rules are applied".into());
         }
-        if !f.exclude_dirs.trim().is_empty() {
-            why.push(format!("folders skipped: {}", f.exclude_dirs.trim()));
+        if !f.include_files {
+            why.push("only folders are listed (Include Files is off)".into());
+        } else if !f.include_folders {
+            why.push("only files are listed (Include Folders is off)".into());
         }
         if !f.recurse {
             why.push("subfolders are not searched".into());
         }
         if why.is_empty() {
-            "No matching files.".into()
+            "Nothing found.".into()
         } else {
-            format!("No matching files.\nNote: {}.", why.join("; "))
+            format!("Nothing found.\nNote: {}.", why.join("; "))
         }
     }
 
@@ -619,14 +633,12 @@ impl SeekerApp {
 
     fn handle_keys(&mut self, ctx: &egui::Context) {
         let typing = ctx.egui_wants_keyboard_input();
-        let (enter, esc, f3, shift, up, down, ctrl_f) = ctx.input(|i| {
+        let (enter, esc, f3, shift, ctrl_f) = ctx.input(|i| {
             (
                 i.key_pressed(Key::Enter),
                 i.key_pressed(Key::Escape),
                 i.key_pressed(Key::F3),
                 i.modifiers.shift,
-                i.key_pressed(Key::ArrowUp),
-                i.key_pressed(Key::ArrowDown),
                 i.modifiers.command && i.key_pressed(Key::F),
             )
         });
@@ -642,14 +654,28 @@ impl SeekerApp {
         if ctrl_f {
             self.focus_name = true;
         }
+        // Moving through the found list works whenever the cursor isn't in a
+        // text field.
         if !typing && !self.results.is_empty() {
-            let n = self.results.len();
-            if down {
-                let i = self.selected.map_or(0, |i| (i + 1).min(n - 1));
-                self.select(i);
-                self.scroll_table = true;
-            } else if up {
-                let i = self.selected.map_or(0, |i| i.saturating_sub(1));
+            let moves = ctx.input_mut(|i| {
+                let mut m = Vec::new();
+                for (key, mv) in [
+                    (Key::ArrowUp, ListMove::Up),
+                    (Key::ArrowDown, ListMove::Down),
+                    (Key::PageUp, ListMove::PageUp),
+                    (Key::PageDown, ListMove::PageDown),
+                    (Key::Home, ListMove::Home),
+                    (Key::End, ListMove::End),
+                ] {
+                    // Consume the key so no scroll area also scrolls by it.
+                    while i.consume_key(egui::Modifiers::NONE, key) {
+                        m.push(mv);
+                    }
+                }
+                m
+            });
+            for mv in moves {
+                let i = list_move(self.selected, self.results.len(), self.page_rows, mv);
                 self.select(i);
                 self.scroll_table = true;
             }
@@ -848,14 +874,35 @@ impl SeekerApp {
                         });
                 });
                 ui.horizontal_wrapped(|ui| {
-                    let ex_w = field_w(260.0);
-                    wrap_before(ui, text_width(ui, "Exclude folders:") + sp + ex_w + fpad);
-                    ui.label("Exclude folders:");
-                    ui.add(
-                        egui::TextEdit::singleline(&mut f.exclude_dirs)
-                            .hint_text("none (e.g. .git;node_modules)")
-                            .desired_width(ex_w),
-                    );
+                    let icon = ui.spacing().icon_width + ui.spacing().icon_spacing;
+                    // At least one of the two stays on: the last checked box is locked.
+                    let files_alone = f.include_files && !f.include_folders;
+                    let folders_alone = f.include_folders && !f.include_files;
+                    const BOTH_OFF: &str =
+                        "At least one of Include Files and Include Folders must be on.";
+                    wrap_before(ui, icon + text_width(ui, "Include Files"));
+                    ui.add_enabled(
+                        !files_alone,
+                        egui::Checkbox::new(&mut f.include_files, "Include Files"),
+                    )
+                    .on_hover_text("List files whose name matches.")
+                    .on_disabled_hover_text(BOTH_OFF);
+                    wrap_before(ui, icon + text_width(ui, "Include Folders"));
+                    ui.add_enabled(
+                        !folders_alone,
+                        egui::Checkbox::new(&mut f.include_folders, "Include Folders"),
+                    )
+                    .on_hover_text("List folders whose name matches the File name pattern.")
+                    .on_disabled_hover_text(BOTH_OFF);
+                    if !f.content.is_empty() && f.include_folders {
+                        let hint = if f.include_files {
+                            "(folders are not listed when searching for text)"
+                        } else {
+                            "(folders have no text: turn on Include Files or clear Containing text)"
+                        };
+                        wrap_before(ui, text_width(ui, hint));
+                        ui.weak(hint);
+                    }
                     let sz_w = field_w(110.0);
                     wrap_before(
                         ui,
@@ -918,7 +965,7 @@ impl SeekerApp {
                 ui.spinner();
                 let p = &h.progress;
                 ui.label(format!(
-                    "Searching…  {} files scanned · {} matching files · {} hits · {:.1} s",
+                    "Searching…  {} scanned · {} found · {} hits · {:.1} s",
                     fmt(p.files_scanned.load(Ordering::Relaxed)),
                     fmt(p.files_matched.load(Ordering::Relaxed)),
                     fmt(p.total_hits.load(Ordering::Relaxed)),
@@ -926,7 +973,7 @@ impl SeekerApp {
                 ));
             } else if let Some(s) = &self.last_stats {
                 ui.label(format!(
-                    "{}  {} files scanned · {} matching files · {} hits · {}",
+                    "{}  {} scanned · {} found · {} hits · {}",
                     if s.cancelled { "Stopped." } else { "Done." },
                     fmt(s.files_scanned),
                     fmt(s.files_matched),
@@ -959,12 +1006,17 @@ impl SeekerApp {
         let (cur_col, asc) = self.sort;
         let scroll_to = self.scroll_table.then_some(self.selected).flatten();
         self.scroll_table = false;
+        // Header and scroll bar aside, this many rows are visible: one "page".
+        self.page_rows = (((ui.available_height() - row_h - 8.0)
+            / (row_h + ui.spacing().item_spacing.y))
+            .floor() as usize)
+            .max(1);
         let has_content = self.results.iter().any(|h| h.hit_lines > 0);
         let size_w = text_width(ui, "999.9 KB") + 16.0;
         let date_w = text_width(ui, "2026-11-16 20:17") + 16.0;
         let hits_w = text_width(ui, "Hits 9999") + 8.0;
         let rest = (ui.available_width() - size_w - date_w - hits_w - 40.0).max(160.0);
-        let (name_w, folder_w) = (rest * 0.38, rest * 0.62);
+        let (name_w, folder_w) = (rest * 0.45, rest * 0.55);
 
         // Column widths are remembered per window width (in 40-point steps)
         // and text size, so after a resize or a new text size the columns are
@@ -973,6 +1025,7 @@ impl SeekerApp {
             (ui.available_width() / 40.0) as u32,
             egui::TextStyle::Body.resolve(ui.style()).size as u32,
         );
+        let icon_colors = IconColors::new(ui.visuals());
         let mut tb = TableBuilder::new(ui)
             .id_salt(("results", layout_key))
             .striped(true)
@@ -1031,6 +1084,7 @@ impl SeekerApp {
                     .map(|p| p.to_string_lossy())
                     .unwrap_or_default();
                 row.col(|ui| {
+                    kind_icon(ui, h.is_dir, &icon_colors);
                     ui.add(egui::Label::new(name.as_ref()).truncate().selectable(false));
                 });
                 row.col(|ui| {
@@ -1042,14 +1096,19 @@ impl SeekerApp {
                 });
                 row.col(|ui| {
                     ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                        ui.add(egui::Label::new(search::format_size(h.size)).selectable(false));
+                        let size = if h.is_dir {
+                            "–".into()
+                        } else {
+                            search::format_size(h.size)
+                        };
+                        ui.add(egui::Label::new(size).selectable(false));
                     });
                 });
                 row.col(|ui| {
                     ui.add(egui::Label::new(export::format_time(h.modified)).selectable(false));
                 });
                 row.col(|ui| {
-                    let t = if has_content {
+                    let t = if has_content && !h.is_dir {
                         format_count(h.hits)
                     } else {
                         "–".into()
@@ -1083,7 +1142,7 @@ impl SeekerApp {
                         action = Some((i, RowAction::CopyPath));
                         ui.close();
                     }
-                    if ui.button("Copy file name").clicked() {
+                    if ui.button("Copy name").clicked() {
                         action = Some((i, RowAction::CopyName));
                         ui.close();
                     }
@@ -1112,7 +1171,12 @@ impl SeekerApp {
                 RowAction::Open => self.report(platform::open_file(&p)),
                 RowAction::Folder => self.report(platform::show_in_folder(&p)),
                 RowAction::Terminal => {
-                    let dir = p.parent().unwrap_or(&p).to_path_buf();
+                    // A folder opens a terminal in itself, a file in its folder.
+                    let dir = if p.is_dir() {
+                        p.clone()
+                    } else {
+                        p.parent().unwrap_or(&p).to_path_buf()
+                    };
                     match platform::open_terminal(&dir) {
                         Err(e) if e == platform::TERMINAL_UNAVAILABLE => {
                             // Sandboxed (Flatpak): we can't start host programs,
@@ -1176,6 +1240,17 @@ impl SeekerApp {
         let Some(h) = self.selected.and_then(|i| self.results.get(i)) else {
             return;
         };
+        if h.is_dir {
+            ui.weak(format!(
+                "Folder · modified {}",
+                export::format_time(h.modified)
+            ));
+            if ui.button("Open folder").clicked() {
+                let p = h.path.clone();
+                self.report(platform::open_file(&p));
+            }
+            return;
+        }
         if h.lines.is_empty() {
             ui.weak(format!(
                 "{} · {} · modified {}",
@@ -1319,6 +1394,131 @@ impl SeekerApp {
 }
 
 /// Width of `text` in the body font.
+/// A keyboard move in the found list.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ListMove {
+    Up,
+    Down,
+    PageUp,
+    PageDown,
+    Home,
+    End,
+}
+
+/// The row selected after `mv`, in a list of `n > 0` rows with `page` rows visible.
+fn list_move(selected: Option<usize>, n: usize, page: usize, mv: ListMove) -> usize {
+    let last = n.saturating_sub(1);
+    let page = page.max(1);
+    let Some(cur) = selected.map(|i| i.min(last)) else {
+        return match mv {
+            ListMove::End => last,
+            _ => 0,
+        };
+    };
+    match mv {
+        ListMove::Up => cur.saturating_sub(1),
+        ListMove::Down => (cur + 1).min(last),
+        ListMove::PageUp => cur.saturating_sub(page),
+        ListMove::PageDown => (cur + page).min(last),
+        ListMove::Home => 0,
+        ListMove::End => last,
+    }
+}
+
+/// Colors for the painted file and folder icons.
+struct IconColors {
+    folder_fill: Color32,
+    folder_tab: Color32,
+    folder_line: Color32,
+    file_fill: Color32,
+    file_line: Color32,
+}
+
+impl IconColors {
+    fn new(v: &egui::Visuals) -> Self {
+        let text = v.text_color();
+        Self {
+            folder_fill: Color32::from_rgb(240, 180, 50),
+            folder_tab: Color32::from_rgb(214, 150, 30),
+            folder_line: Color32::from_rgb(150, 100, 10),
+            file_fill: if v.dark_mode {
+                Color32::from_gray(225)
+            } else {
+                Color32::WHITE
+            },
+            file_line: text.gamma_multiply(0.75),
+        }
+    }
+}
+
+/// Paints a small folder or file icon sized to the text, so it shows the same
+/// whatever font is chosen (no icon font or emoji needed).
+fn kind_icon(ui: &mut egui::Ui, is_dir: bool, c: &IconColors) {
+    let h = ui.text_style_height(&egui::TextStyle::Body);
+    let (rect, resp) = ui.allocate_exact_size(egui::vec2(h * 1.1, h), Sense::hover());
+    resp.on_hover_text(if is_dir { "Folder" } else { "File" });
+    let p = ui.painter();
+    let s = h * 0.9;
+    let r = egui::Rect::from_center_size(rect.center(), egui::vec2(s, s));
+    let stroke = |c: Color32| egui::Stroke::new((h / 16.0).max(1.0), c);
+    if is_dir {
+        let tab = egui::Rect::from_min_max(
+            egui::pos2(r.left() + s * 0.04, r.top() + s * 0.12),
+            egui::pos2(r.left() + s * 0.46, r.top() + s * 0.34),
+        );
+        p.rect(
+            tab,
+            s * 0.06,
+            c.folder_tab,
+            stroke(c.folder_line),
+            egui::StrokeKind::Inside,
+        );
+        let body = egui::Rect::from_min_max(
+            egui::pos2(r.left() + s * 0.04, r.top() + s * 0.26),
+            egui::pos2(r.right() - s * 0.04, r.bottom() - s * 0.1),
+        );
+        p.rect(
+            body,
+            s * 0.08,
+            c.folder_fill,
+            stroke(c.folder_line),
+            egui::StrokeKind::Inside,
+        );
+    } else {
+        let (l, t) = (r.left() + s * 0.16, r.top() + s * 0.04);
+        let (rt, b) = (r.right() - s * 0.16, r.bottom() - s * 0.04);
+        let fold = s * 0.24;
+        let outline = vec![
+            egui::pos2(l, t),
+            egui::pos2(rt - fold, t),
+            egui::pos2(rt, t + fold),
+            egui::pos2(rt, b),
+            egui::pos2(l, b),
+        ];
+        p.add(egui::Shape::convex_polygon(
+            outline.clone(),
+            c.file_fill,
+            egui::Stroke::NONE,
+        ));
+        p.add(egui::Shape::closed_line(outline, stroke(c.file_line)));
+        p.add(egui::Shape::line(
+            vec![
+                egui::pos2(rt - fold, t),
+                egui::pos2(rt - fold, t + fold),
+                egui::pos2(rt, t + fold),
+            ],
+            stroke(c.file_line),
+        ));
+        for k in 0..3 {
+            let y = t + s * (0.42 + 0.16 * k as f32);
+            p.line_segment(
+                [egui::pos2(l + s * 0.12, y), egui::pos2(rt - s * 0.12, y)],
+                stroke(c.file_line.gamma_multiply(0.6)),
+            );
+        }
+    }
+}
+
 fn text_width(ui: &egui::Ui, text: &str) -> f32 {
     egui::WidgetText::from(text)
         .into_galley(
@@ -1545,6 +1745,24 @@ mod tests {
         assert_eq!(format_count(1234567), "1,234,567");
     }
     #[test]
+    fn list_keys_move_and_clamp() {
+        use ListMove::*;
+        assert_eq!(list_move(None, 50, 10, Down), 0);
+        assert_eq!(list_move(None, 50, 10, End), 49);
+        assert_eq!(list_move(Some(0), 50, 10, Up), 0);
+        assert_eq!(list_move(Some(5), 50, 10, Down), 6);
+        assert_eq!(list_move(Some(5), 50, 10, PageDown), 15);
+        assert_eq!(list_move(Some(45), 50, 10, PageDown), 49);
+        assert_eq!(list_move(Some(15), 50, 10, PageUp), 5);
+        assert_eq!(list_move(Some(3), 50, 10, PageUp), 0);
+        assert_eq!(list_move(Some(30), 50, 10, Home), 0);
+        assert_eq!(list_move(Some(30), 50, 10, End), 49);
+        // A stale selection past the end is clamped; a zero page still moves.
+        assert_eq!(list_move(Some(99), 5, 10, Up), 3);
+        assert_eq!(list_move(Some(2), 5, 0, PageDown), 3);
+    }
+
+    #[test]
     fn old_saved_form_is_migrated() {
         // A form saved by 0.1.1 (no form_version, old defaults).
         let old = r#"(name_pattern: "*.md", include_hidden: false, exclude_dirs: ".git;node_modules;target;__pycache__")"#;
@@ -1552,19 +1770,35 @@ mod tests {
         assert_eq!(f.form_version, 1);
         f.migrate();
         assert!(f.include_hidden);
-        assert!(f.exclude_dirs.is_empty());
+        assert!(f.include_files && f.include_folders);
         assert_eq!(f.name_pattern, "*.md");
-        // A custom exclude list is kept.
-        let mut f: Form = ron::from_str(r#"(exclude_dirs: "build")"#).unwrap();
+        assert!(f.to_options().unwrap().exclude_dirs.is_empty());
+        // A form saved by build 2 (version 2) with a custom exclude list:
+        // the list is dropped and both files and folders are listed.
+        let mut f: Form =
+            ron::from_str(r#"(form_version: 2, exclude_dirs: "build", include_hidden: false)"#)
+                .unwrap();
         f.migrate();
-        assert_eq!(f.exclude_dirs, "build");
-        // Choices made in 0.1.2 or later are left alone.
+        assert!(!f.include_hidden);
+        assert!(f.include_files && f.include_folders);
+        assert_eq!(f.form_version, FORM_VERSION);
+        // Choices made in the current version are left alone...
         let mut f = Form {
             include_hidden: false,
+            include_files: false,
             ..Default::default()
         };
         f.migrate();
         assert!(!f.include_hidden);
+        assert!(!f.include_files && f.include_folders);
+        // ...but never both kinds turned off.
+        let mut f = Form {
+            include_files: false,
+            include_folders: false,
+            ..Default::default()
+        };
+        f.migrate();
+        assert!(f.include_files);
     }
 
     #[test]

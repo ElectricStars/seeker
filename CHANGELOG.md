@@ -18,6 +18,14 @@ All notable changes to Seeker are listed here. The format follows
   - Changes preview live in the main window. **Save** keeps them (the window stays open),
     **Cancel** goes back to the last saved settings, **Close** with unsaved changes asks
     whether to save or discard them.
+- **Include Files** and **Include Folders** check boxes (#8): list matching files, matching
+  folders, or both (the default). Folder names are matched by the same File name pattern.
+  At least one stays on. Folders have no text, so a search with *Containing text* lists files
+  only (the window says so). Command line: `--type f|d|both`.
+- The found list shows a folder or file icon on every row (#9). The icons are drawn, not
+  taken from a font, so they look the same with any font in Preferences.
+- Page Up / Page Down, Home / End and ↑ / ↓ move through the found list and scroll it, whenever
+  the cursor isn't in a text box (#10).
 - `--skip-hidden` command-line option.
 - Wildcards typed in quotes (`"*.md"`) or separated by spaces (`*.md *.txt`) work.
 - When a search finds nothing, the window says which options narrowed it
@@ -27,6 +35,11 @@ All notable changes to Seeker are listed here. The format follows
 - No sliders anywhere: the text size is a list with − / + buttons, and "Context lines" is a
   list (0–10). The separate interface scale and preview font are gone; Ctrl +/− no longer
   zoom the window.
+- The "Exclude folders" box is gone from the main window (replaced by Include Files /
+  Include Folders, #8); a list saved by an earlier build is dropped. To skip a folder, add a
+  path pattern to File name, e.g. `*.md;!*/node_modules/*`. `--exclude` still works with `--cli`.
+- CSV export has a `type` column (`file` or `folder`); text export marks folders with a
+  trailing `/`. The status bar says "found" instead of "matching files".
 - Larger default text (16 pt instead of 13 pt), larger fields and buttons, larger default window.
 - A plain search now looks everywhere, like Agent Ransack: hidden files and folders are
   included and no folders are excluded by default. Skipping hidden files, `.gitignore` rules
@@ -34,6 +47,7 @@ All notable changes to Seeker are listed here. The format follows
   updated once.
 
 ### Fixed
+- `seeker --help` lost the indentation of its option list.
 - The buttons and options on the right of the search form ran past the window edge at large
   text sizes or narrow widths (#7). The form now wraps, the results columns shrink to fit, and
   the window has a minimum size.
