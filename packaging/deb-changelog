@@ -1,9 +1,9 @@
-seeker (0.1.2) UNRELEASED; urgency=medium
+seeker (0.1.2) stable; urgency=medium
 
   * Release .deb built with cargo-deb for Ubuntu 20.04+ and Debian 11+.
     Upstream changes are in /usr/share/doc/seeker/CHANGELOG.md.
 
- -- Eric Allen <trajic@tutanota.com>  Mon, 16 Nov 2026 12:00:00 -0800
+ -- Eric Allen <trajic@tutanota.com>  Tue, 17 Nov 2026 10:00:00 -0800
 
 seeker (0.1.1) stable; urgency=medium
 

@@ -536,10 +536,24 @@ impl PrefsWindow {
         // Sized from the saved text size so the window doesn't jump around
         // while sizes are being tried.
         let em = snap_font_size(saved.font_size);
+        // Wide fonts (e.g. Michroma) need a wider window than the default font.
+        let sample = ctx.fonts_mut(|f| {
+            f.layout_no_wrap(
+                "Automatic (best contrast)".into(),
+                egui::FontId::proportional(em),
+                Color32::WHITE,
+            )
+            .size()
+            .x
+        });
+        let wide = (sample / em / SAMPLE_EM_DEFAULT_FONT).clamp(1.0, 1.6);
         let builder = egui::ViewportBuilder::default()
             .with_title(PREFS_TITLE)
             .with_app_id(crate::DESKTOP_ID)
-            .with_inner_size([(em * 44.0).min(1100.0), (em * 34.0).min(820.0)])
+            .with_inner_size([
+                (em * 44.0 * wide).min(1400.0),
+                (em * 34.0 * wide.sqrt()).min(900.0),
+            ])
             .with_min_inner_size([480.0, 400.0]);
         let id = egui::ViewportId::from_hash_of("seeker-preferences");
         if self
@@ -638,18 +652,27 @@ impl PrefsWindow {
                 });
             });
 
+        // The sidebar is as wide as its longest label in the current font and
+        // size (wide fonts such as Michroma included), so labels never wrap.
+        const PAGES: [(Page, &str); 2] = [
+            (Page::Appearance, "Appearance"),
+            (Page::Font, "Font and Size"),
+        ];
+        let label_w = PAGES
+            .iter()
+            .map(|(_, l)| nav_label_width(ui, l, em))
+            .fold(0.0, f32::max);
+        let nav_w = label_w + 2.0 * style.spacing.button_padding.x + 2.0 * (pad * 0.75) + em;
         egui::Panel::left("prefs_nav")
             .resizable(false)
-            .exact_size(em * 10.0)
+            .exact_size(nav_w)
             .frame(egui::Frame::side_top_panel(&style).inner_margin(pad * 0.75))
             .show(ui, |ui| {
                 ui.add_space(pad * 0.25);
-                for (page, label) in [
-                    (Page::Appearance, "Appearance"),
-                    (Page::Font, "Font and Size"),
-                ] {
+                for (page, label) in PAGES {
                     let sel = self.page == page;
                     let b = egui::Button::selectable(sel, RichText::new(label).size(em))
+                        .wrap_mode(egui::TextWrapMode::Extend)
                         .min_size(egui::vec2(ui.available_width(), em * 2.0));
                     if ui.add(b).clicked() {
                         self.page = page;
@@ -892,6 +915,23 @@ impl PrefsWindow {
             s.font_size = d.font_size;
         }
     }
+}
+
+/// Width of "Automatic (best contrast)" in text-size units with the default
+/// font (Ubuntu Light); wider fonts get a proportionally wider window.
+const SAMPLE_EM_DEFAULT_FONT: f32 = 11.5;
+
+/// Width of a sidebar label at text size `em`, without wrapping.
+fn nav_label_width(ui: &egui::Ui, label: &str, em: f32) -> f32 {
+    egui::WidgetText::from(RichText::new(label).size(em))
+        .into_galley(
+            ui,
+            Some(egui::TextWrapMode::Extend),
+            f32::INFINITY,
+            egui::TextStyle::Body,
+        )
+        .size()
+        .x
 }
 
 #[cfg(test)]

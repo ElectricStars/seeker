@@ -3,7 +3,7 @@
 All notable changes to Seeker are listed here. The format follows
 [Keep a Changelog](https://keepachangelog.com/) and versions follow [SemVer](https://semver.org/).
 
-## [0.1.2] - Unreleased
+## [0.1.2] - 2026-11-17
 
 ### Added
 - **Preferences** window (*Settings → Preferences…*) with a sidebar for its two pages,
@@ -47,6 +47,8 @@ All notable changes to Seeker are listed here. The format follows
   updated once.
 
 ### Fixed
+- The Preferences sidebar and window size themselves to the chosen font, so wide fonts such as
+  Michroma no longer wrap "Appearance" or "Font and Size".
 - `seeker --help` lost the indentation of its option list.
 - The buttons and options on the right of the search form ran past the window edge at large
   text sizes or narrow widths (#7). The form now wraps, the results columns shrink to fit, and

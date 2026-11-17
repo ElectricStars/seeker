@@ -6,7 +6,13 @@ and the speed of [ripgrep](https://github.com/BurntSushi/ripgrep)'s search crate
 One native binary written in Rust with an [egui](https://github.com/emilk/egui) interface;
 no Qt, GTK or Python needed.
 
-![Seeker screenshot](docs/screenshot.png)
+![Seeker main window: files and folders found by name](docs/screenshots/main-window.png)
+
+| Appearance | Font and Size |
+|---|---|
+| ![Preferences: Appearance](docs/screenshots/preferences-appearance.png) | ![Preferences: Font and Size](docs/screenshots/preferences-font-and-size.png) |
+
+*Shown with the "Paper" background and the [Michroma](https://fonts.google.com/specimen/Michroma) font at 20 pt.*
 
 > Seeker is an independent open-source project. It is not affiliated with,
 > endorsed by, or derived from Mythicsoft or any of its products.

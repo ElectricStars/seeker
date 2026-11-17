@@ -1,12 +1,14 @@
-seeker (0.1.2-1~noble1) UNRELEASED; urgency=medium
+seeker (0.1.2-1~noble1) noble; urgency=medium
 
-  * New upstream version 0.1.2 (not yet released).
+  * New upstream version 0.1.2.
     - Preferences window (Appearance, Font and Size) with Save, Cancel, Close.
     - One font and text size for everything; no sliders.
     - Searches include hidden files and folders by default (fixes *.md).
+    - Include Files / Include Folders: list matching files, folders or both.
+    - Folder and file icons in the found list; Page Up/Down, Home/End keys.
     - Search form fits narrow windows and large text sizes.
 
- -- Eric Allen <trajic@tutanota.com>  Mon, 16 Nov 2026 12:00:00 -0800
+ -- Eric Allen <trajic@tutanota.com>  Tue, 17 Nov 2026 10:00:00 -0800
 
 seeker (0.1.1-1~noble1) noble; urgency=medium
 
