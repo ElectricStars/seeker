@@ -47,16 +47,16 @@
 
   <screenshots>
     <screenshot type="default">
-      <caption>Searching source files for text, with highlighted matches in the preview</caption>
-      <image>https://raw.githubusercontent.com/ElectricStars/seeker/v0.1.1/docs/screenshot.png</image>
+      <caption>Finding files and folders by name, with folder and file icons</caption>
+      <image type="source" width="1440" height="900">https://raw.githubusercontent.com/ElectricStars/seeker/v0.1.2/docs/screenshots/main-window.png</image>
     </screenshot>
     <screenshot>
-      <caption>Opening a result or its folder from the context menu</caption>
-      <image>https://raw.githubusercontent.com/ElectricStars/seeker/v0.1.1/docs/screenshot-actions.png</image>
+      <caption>Preferences: light, dark or custom background color</caption>
+      <image type="source" width="1152" height="720">https://raw.githubusercontent.com/ElectricStars/seeker/v0.1.2/docs/screenshots/preferences-appearance.png</image>
     </screenshot>
     <screenshot>
-      <caption>Finding large files by name, size and date</caption>
-      <image>https://raw.githubusercontent.com/ElectricStars/seeker/v0.1.1/docs/screenshot-filters.png</image>
+      <caption>Preferences: one font and text size for the whole window</caption>
+      <image type="source" width="1152" height="720">https://raw.githubusercontent.com/ElectricStars/seeker/v0.1.2/docs/screenshots/preferences-font-and-size.png</image>
     </screenshot>
   </screenshots>
 
@@ -92,6 +92,18 @@
   <content_rating type="oars-1.1"/>
 
   <releases>
+    <release version="0.1.2" date="2026-11-17">
+      <description>
+        <ul>
+          <li>Preferences window with Appearance (background color, light/dark theme) and Font and Size pages</li>
+          <li>One font and text size for the whole window, larger by default</li>
+          <li>Searches include hidden files and folders by default, so *.md finds every Markdown file</li>
+          <li>Include Files and Include Folders: find files, folders or both</li>
+          <li>Folder and file icons in the results; Page Up/Down and Home/End move through them</li>
+          <li>The search form fits any window width and text size</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.1" date="2026-11-11">
       <description>
         <ul>

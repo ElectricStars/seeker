@@ -6,30 +6,43 @@ and the speed of [ripgrep](https://github.com/BurntSushi/ripgrep)'s search crate
 One native binary written in Rust with an [egui](https://github.com/emilk/egui) interface;
 no Qt, GTK or Python needed.
 
-![Seeker screenshot](docs/screenshot.png)
+![Seeker main window: files and folders found by name](docs/screenshots/main-window.png)
+
+| Appearance | Font and Size |
+|---|---|
+| ![Preferences: Appearance](docs/screenshots/preferences-appearance.png) | ![Preferences: Font and Size](docs/screenshots/preferences-font-and-size.png) |
+
+*Shown with the "Paper" background and the [Michroma](https://fonts.google.com/specimen/Michroma) font at 20 pt.*
 
 > Seeker is an independent open-source project. It is not affiliated with,
 > endorsed by, or derived from Mythicsoft or any of its products.
 
 ## Features
 
+- **Files, folders or both**: *Include Files* and *Include Folders* choose what is listed;
+  folder names are matched by the same pattern (text searches list files only).
 - **File name search** with wildcards (`*.rs;*.toml;!*.lock`, case-insensitive; a bare word
   like `report` means "name contains report") or a **regular expression**.
 - **Containing text**: plain text or regex, match case, whole word.
 - **Several start folders** at once (separate with `;`, `~` works), native folder picker,
   subfolders on/off.
-- **Filters**: exclude folders (default `.git;node_modules;target;__pycache__`, wildcards allowed),
-  respect `.gitignore`/`.ignore`, include hidden files, follow symlinks, skip binary files,
+- **Searches everything by default**, hidden files included. Optional filters: respect
+  `.gitignore`/`.ignore`, skip hidden files, follow symlinked folders, skip binary files,
   size range (`10K`, `5M`, `1.5G`), modified-date range (`YYYY-MM-DD`).
 - **Fast and responsive**: parallel directory walk on all CPU cores, results stream in while
   the search runs, **Stop** button / **Esc** to cancel, live counters in the status bar.
-- **Results table**: name, folder, size, modified, hit count, click headers to sort.
+- **Results table**: a folder or file icon, name, folder, size, modified, hit count; click
+  headers to sort.
 - **Preview pane**: matching lines with line numbers, highlighted hits, configurable context
   lines, Prev/Next hit (F3 / Shift+F3).
 - **Right-click**: open, open containing folder (selects the file in Files/Nautilus),
   open terminal here, copy path / name. Double-click opens the file.
 - **Export** results to CSV or plain text.
-- Remembers your last search settings.
+- **Preferences** (menu *Settings → Preferences…*, its own window): light, dark or custom
+  background color with automatic readable text color; one font (built-in or any installed
+  font) and one text size (10–32 pt) for the whole window. Changes preview live; Save keeps
+  them, Cancel goes back to the last saved settings.
+- Remembers your last search and your settings.
 - Copes with permission errors (listed, not fatal), non-UTF-8 and UTF-16 (BOM) files,
   huge files and very long lines. Skips `/proc`, `/sys`, `/dev` and `/run` when searching `/`.
 - **Terminal mode**: `seeker --cli` prints `path:line:text`, handy for scripts.
@@ -42,6 +55,8 @@ no Qt, GTK or Python needed.
 | Esc | Stop search |
 | F3 / Shift+F3 | Next / previous hit in the preview |
 | ↑ / ↓ | Move through results (when no text box has focus) |
+| Page Up / Page Down | Move a screenful through results |
+| Home / End | First / last result |
 | Ctrl+F | Focus the file-name box |
 
 ## Install with apt (Ubuntu, Zorin, Mint, Debian)
@@ -138,7 +153,7 @@ seeker --help
 
 CLI exit status: 0 = something found, 1 = nothing found, 2 = error.
 
-Settings are stored in `~/.local/share/seeker/app.ron`.
+Settings and the last search are stored in `~/.local/share/io.github.electricstars.seeker/app.ron`.
 
 ## How it works
 

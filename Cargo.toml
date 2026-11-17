@@ -1,6 +1,6 @@
 [package]
 name = "seeker"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 rust-version = "1.95"
 description = "Fast desktop file search for Linux (name + content), powered by the ripgrep crates and egui"
@@ -34,6 +34,7 @@ serde = { version = "1.0.229", features = ["derive"] }
 winit = { version = "0.30", default-features = false, features = ["wayland-csd-adwaita"] }
 
 [dev-dependencies]
+ron = "0.12"
 tempfile = "3.27.0"
 
 [profile.release]

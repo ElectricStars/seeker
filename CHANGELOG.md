@@ -3,7 +3,64 @@
 All notable changes to Seeker are listed here. The format follows
 [Keep a Changelog](https://keepachangelog.com/) and versions follow [SemVer](https://semver.org/).
 
-## [Unreleased]
+## [0.1.2] - 2026-11-17
+
+### Added
+- **Preferences** window (*Settings → Preferences…*) with a sidebar for its two pages,
+  *Appearance* and *Font and Size* (#1, #2, #5). It opens as its own window that can be moved
+  anywhere (#6); where separate windows are not supported it opens inside the main window.
+  - Appearance: Light (new default), Dark, Follow system, or a custom background color
+    (color picker plus presets). Text color is picked automatically for the best contrast,
+    or can be chosen; the page shows the contrast ratio and warns when text would be hard to read.
+  - Font and Size: one font for everything, from the built-in fonts or any font installed on
+    the system (found with fontconfig's `fc-list`), and one text size picked from a list
+    (10–32 pt) or stepped with − / +. Fields, buttons and spacing grow with the text.
+  - Changes preview live in the main window. **Save** keeps them (the window stays open),
+    **Cancel** goes back to the last saved settings, **Close** with unsaved changes asks
+    whether to save or discard them.
+- **Include Files** and **Include Folders** check boxes (#8): list matching files, matching
+  folders, or both (the default). Folder names are matched by the same File name pattern.
+  At least one stays on. Folders have no text, so a search with *Containing text* lists files
+  only (the window says so). Command line: `--type f|d|both`.
+- The found list shows a folder or file icon on every row (#9). The icons are drawn, not
+  taken from a font, so they look the same with any font in Preferences.
+- Page Up / Page Down, Home / End and ↑ / ↓ move through the found list and scroll it, whenever
+  the cursor isn't in a text box (#10).
+- `--skip-hidden` command-line option.
+- Wildcards typed in quotes (`"*.md"`) or separated by spaces (`*.md *.txt`) work.
+- When a search finds nothing, the window says which options narrowed it
+  (e.g. "Containing text" still filled in, hidden files skipped).
+
+### Changed
+- No sliders anywhere: the text size is a list with − / + buttons, and "Context lines" is a
+  list (0–10). The separate interface scale and preview font are gone; Ctrl +/− no longer
+  zoom the window.
+- The "Exclude folders" box is gone from the main window (replaced by Include Files /
+  Include Folders, #8); a list saved by an earlier build is dropped. To skip a folder, add a
+  path pattern to File name, e.g. `*.md;!*/node_modules/*`. `--exclude` still works with `--cli`.
+- CSV export has a `type` column (`file` or `folder`); text export marks folders with a
+  trailing `/`. The status bar says "found" instead of "matching files".
+- Larger default text (16 pt instead of 13 pt), larger fields and buttons, larger default window.
+- A plain search now looks everywhere, like Agent Ransack: hidden files and folders are
+  included and no folders are excluded by default. Skipping hidden files, `.gitignore` rules
+  and excluded folders are opt-in. Saved forms from 0.1.1 that still had the old defaults are
+  updated once.
+
+### Fixed
+- The Preferences sidebar and window size themselves to the chosen font, so wide fonts such as
+  Michroma no longer wrap "Appearance" or "Font and Size".
+- `seeker --help` lost the indentation of its option list.
+- The buttons and options on the right of the search form ran past the window edge at large
+  text sizes or narrow widths (#7). The form now wraps, the results columns shrink to fit, and
+  the window has a minimum size.
+- File name search `*.md` missed `.md` files (#3): files in hidden folders (such as
+  `~/.config` or `~/.local`), hidden files, files under `node_modules`, `target`, `.git` and
+  `__pycache__`, and symlinks to files were all skipped by default.
+- Symbolic links to files are always listed; "Follow symlinks" now only controls entering
+  symlinked folders.
+- Wildcards without `/` are matched against the file name only. Before, they were also matched
+  against the full path, so a bare word such as `!test` excluded every file under a folder whose
+  path contained "test".
 
 ### Packaging
 - `.deb` for Ubuntu 20.04+ / Debian 11+ built with `cargo deb` and attached to releases.

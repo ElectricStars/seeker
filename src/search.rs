@@ -51,6 +51,10 @@ pub struct SearchOptions {
     pub case_sensitive: bool,
     pub whole_word: bool,
     pub recurse: bool,
+    /// List files whose name matches.
+    pub include_files: bool,
+    /// List folders whose name matches (never when searching for text).
+    pub include_folders: bool,
     /// Folder names (wildcards allowed) that are never entered.
     pub exclude_dirs: Vec<String>,
     pub respect_gitignore: bool,
@@ -80,9 +84,11 @@ impl Default for SearchOptions {
             case_sensitive: false,
             whole_word: false,
             recurse: true,
+            include_files: true,
+            include_folders: true,
             exclude_dirs: default_excludes(),
             respect_gitignore: false,
-            include_hidden: false,
+            include_hidden: true,
             follow_symlinks: false,
             skip_binary: true,
             min_size: None,
@@ -95,11 +101,55 @@ impl Default for SearchOptions {
     }
 }
 
+/// Folders skipped by default. Empty: like Agent Ransack, a plain search
+/// looks everywhere, and the user opts in to skipping folders.
 pub fn default_excludes() -> Vec<String> {
-    [".git", "node_modules", "target", "__pycache__"]
-        .iter()
-        .map(|s| s.to_string())
-        .collect()
+    Vec::new()
+}
+
+/// Removes one pair of matching quotes around a pattern: `"*.md"` -> `*.md`.
+fn unquote(s: &str) -> &str {
+    for (open, close) in [
+        ('"', '"'),
+        ('\'', '\''),
+        ('\u{201c}', '\u{201d}'),
+        ('\u{2018}', '\u{2019}'),
+    ] {
+        if let Some(inner) = s.strip_prefix(open).and_then(|r| r.strip_suffix(close))
+            && !inner.contains([open, close])
+        {
+            return inner.trim();
+        }
+    }
+    s
+}
+
+fn has_wildcard(s: &str) -> bool {
+    s.contains(['*', '?', '[', '{'])
+}
+
+/// Splits a wildcard field into single patterns. `;` and `,` always separate;
+/// spaces separate only when every space-separated word is itself a wildcard
+/// (`*.md *.txt`), so a bare phrase such as `my notes` stays one pattern.
+fn split_wildcards(pattern: &str) -> Vec<String> {
+    let mut out = Vec::new();
+    for part in pattern.split([';', ',']).map(str::trim) {
+        let part = unquote(part);
+        if part.is_empty() {
+            continue;
+        }
+        let words: Vec<&str> = part.split_whitespace().map(unquote).collect();
+        if words.len() > 1
+            && words
+                .iter()
+                .all(|w| has_wildcard(w.trim_start_matches(['!', '-'])))
+        {
+            out.extend(words.iter().map(|w| w.to_string()));
+        } else {
+            out.push(part.to_string());
+        }
+    }
+    out
 }
 
 /// One line shown in the preview: either a hit or a context line.
@@ -116,6 +166,8 @@ pub struct Line {
 #[derive(Debug, Clone)]
 pub struct FileHit {
     pub path: PathBuf,
+    /// True for a folder (its size is 0 and it has no lines).
+    pub is_dir: bool,
     pub size: u64,
     pub modified: Option<SystemTime>,
     /// Number of individual matches in the file (0 for name-only searches).
@@ -187,8 +239,12 @@ impl Drop for SearchHandle {
 pub enum NameFilter {
     All,
     Globs {
+        /// Patterns matched against the file name.
         include: Option<GlobSet>,
         exclude: Option<GlobSet>,
+        /// Patterns containing `/`, matched against the full path.
+        include_path: Option<GlobSet>,
+        exclude_path: Option<GlobSet>,
     },
     Regex(Regex),
 }
@@ -206,67 +262,74 @@ impl NameFilter {
                 .map(NameFilter::Regex)
                 .map_err(|e| format!("Invalid file-name regex: {e}")),
             NameMode::Wildcard => {
-                let mut inc = GlobSetBuilder::new();
-                let mut exc = GlobSetBuilder::new();
-                let (mut n_inc, mut n_exc) = (0, 0);
-                for part in pattern.split([';', ',']).map(str::trim) {
-                    if part.is_empty() {
+                // Slots: name include, name exclude, path include, path exclude.
+                let mut sets: [(GlobSetBuilder, usize); 4] =
+                    std::array::from_fn(|_| (GlobSetBuilder::new(), 0));
+                for part in split_wildcards(pattern) {
+                    let (neg, pat) = match part.strip_prefix('!').or(part.strip_prefix('-')) {
+                        Some(rest) => (true, unquote(rest.trim())),
+                        None => (false, part.as_str()),
+                    };
+                    if pat.is_empty() {
                         continue;
                     }
-                    let (neg, pat) = match part.strip_prefix('!').or(part.strip_prefix('-')) {
-                        Some(rest) => (true, rest.trim()),
-                        None => (false, part),
-                    };
                     // A bare word like "main" means "name contains main".
-                    let pat = if pat.contains(['*', '?', '[', '{']) {
+                    let pat = if has_wildcard(pat) {
                         pat.to_string()
                     } else {
                         format!("*{pat}*")
                     };
+                    let on_path = pat.contains('/');
                     let glob = GlobBuilder::new(&pat)
                         .case_insensitive(true)
                         .literal_separator(false)
                         .build()
                         .map_err(|e| format!("Invalid wildcard '{pat}': {e}"))?;
-                    if neg {
-                        exc.add(glob);
-                        n_exc += 1;
-                    } else {
-                        inc.add(glob);
-                        n_inc += 1;
-                    }
+                    let slot = &mut sets[usize::from(neg) + 2 * usize::from(on_path)];
+                    slot.0.add(glob);
+                    slot.1 += 1;
                 }
-                let build = |b: GlobSetBuilder, n: usize| -> Result<Option<GlobSet>, String> {
-                    if n == 0 {
-                        Ok(None)
+                let mut built = Vec::with_capacity(4);
+                for (b, n) in sets {
+                    built.push(if n == 0 {
+                        None
                     } else {
-                        b.build().map(Some).map_err(|e| e.to_string())
-                    }
-                };
+                        Some(b.build().map_err(|e| e.to_string())?)
+                    });
+                }
+                let [include, exclude, include_path, exclude_path]: [Option<GlobSet>; 4] =
+                    built.try_into().expect("four slots");
                 Ok(NameFilter::Globs {
-                    include: build(inc, n_inc)?,
-                    exclude: build(exc, n_exc)?,
+                    include,
+                    exclude,
+                    include_path,
+                    exclude_path,
                 })
             }
         }
     }
 
-    /// `name` is the file name; `path` the full path (used when a wildcard contains `/`).
+    /// `name` is the file name; `path` the full path. Wildcards are matched
+    /// against the name only, unless they contain `/`.
     pub fn matches(&self, name: &str, path: &Path) -> bool {
         match self {
             NameFilter::All => true,
             NameFilter::Regex(re) => re.is_match(name),
-            NameFilter::Globs { include, exclude } => {
-                let hit = |set: &GlobSet| set.is_match(name) || set.is_match(path);
-                if let Some(ex) = exclude
-                    && hit(ex)
-                {
+            NameFilter::Globs {
+                include,
+                exclude,
+                include_path,
+                exclude_path,
+            } => {
+                let on_name = |s: &Option<GlobSet>| s.as_ref().is_some_and(|s| s.is_match(name));
+                let on_path = |s: &Option<GlobSet>| s.as_ref().is_some_and(|s| s.is_match(path));
+                if on_name(exclude) || on_path(exclude_path) {
                     return false;
                 }
-                match include {
-                    Some(inc) => hit(inc),
-                    None => true,
+                if include.is_none() && include_path.is_none() {
+                    return true;
                 }
+                on_name(include) || on_path(include_path)
             }
         }
     }
@@ -509,6 +572,15 @@ fn prepare(
             return Err(format!("Folder does not exist: {}", r.display()));
         }
     }
+    if !opts.include_files && !opts.include_folders {
+        return Err("Turn on Include Files, Include Folders, or both.".into());
+    }
+    if !opts.include_files && !opts.content.is_empty() {
+        return Err(
+            "Folders have no text to search. Turn on Include Files or clear \"Containing text\"."
+                .into(),
+        );
+    }
     let name = NameFilter::new(&opts.name_pattern, opts.name_mode)?;
     let content = ContentMatcher::new(opts)?;
     let excludes = build_exclude_set(opts)?;
@@ -583,10 +655,20 @@ pub fn run(
             let Some(ft) = entry.file_type() else {
                 return WalkState::Continue;
             };
-            // Symlinks to files are followed only if requested; dirs are handled by the walker.
-            let is_file =
-                ft.is_file() || (ft.is_symlink() && opts.follow_symlinks && entry.path().is_file());
-            if !is_file {
+            // A symlink to a file is listed like a file. "Follow symlinks" only
+            // controls whether symlinked folders are entered (by the walker).
+            let is_file = ft.is_file() || (ft.is_symlink() && entry.path().is_file());
+            // Folders below a root, including symlinks to folders. Folders have no
+            // text, so they are only listed for name searches.
+            let is_dir = !is_file
+                && entry.depth() > 0
+                && (ft.is_dir() || (ft.is_symlink() && entry.path().is_dir()));
+            let wanted = if is_file {
+                opts.include_files
+            } else {
+                is_dir && opts.include_folders && content.is_none()
+            };
+            if !wanted {
                 return WalkState::Continue;
             }
             let path = entry.path();
@@ -602,7 +684,11 @@ pub fn run(
                     return WalkState::Continue;
                 }
             };
-            let size = meta.len();
+            let size = if is_dir { 0 } else { meta.len() };
+            if is_dir && (opts.min_size.is_some() || opts.max_size.is_some()) {
+                // A size limit only makes sense for files.
+                return WalkState::Continue;
+            }
             if opts.min_size.is_some_and(|m| size < m) || opts.max_size.is_some_and(|m| size > m) {
                 return WalkState::Continue;
             }
@@ -621,6 +707,7 @@ pub fn run(
 
             let mut hit = FileHit {
                 path: path.to_path_buf(),
+                is_dir,
                 size,
                 modified,
                 hits: 0,
@@ -628,7 +715,7 @@ pub fn run(
                 lines: Vec::new(),
                 truncated: false,
             };
-            if let Some(m) = content {
+            if let Some(m) = content.filter(|_| !is_dir) {
                 match search_file(&mut searcher, m, path, opts.skip_binary, &cancel) {
                     Ok(Some(r)) => {
                         hit.hits = r.hits;
@@ -876,6 +963,7 @@ mod tests {
         assert_eq!(
             names(&h, d.path()),
             [
+                ".hidden/secret.txt",
                 "ignored_dir/x.txt",
                 "latin1.txt",
                 "notes.txt",
@@ -883,6 +971,188 @@ mod tests {
                 "wide.txt"
             ]
         );
+    }
+
+    /// Issue #3: "*.md" must find every .md file under the folder by default,
+    /// wherever it is and whatever kind of directory entry it is.
+    #[test]
+    fn include_files_and_folders() {
+        let dir = fixture();
+        let p = dir.path();
+        fs::create_dir_all(p.join("src/notes_dir")).unwrap();
+        let base = SearchOptions {
+            roots: vec![p.to_path_buf()],
+            name_pattern: "*n*".into(),
+            ..Default::default()
+        };
+        // Both (the default): files and folders whose name matches.
+        let (h, _) = search(&base);
+        let both = names(&h, p);
+        assert!(both.contains(&"src/main.rs".to_string()), "{both:?}");
+        assert!(both.contains(&"src/nested".to_string()), "{both:?}");
+        assert!(both.contains(&"src/notes_dir".to_string()), "{both:?}");
+        assert!(both.contains(&"notes.txt".to_string()), "{both:?}");
+        let dirs: Vec<_> = h.iter().filter(|h| h.is_dir).collect();
+        assert!(dirs.iter().all(|h| h.path.is_dir() && h.size == 0));
+        // The root itself is never listed.
+        assert!(h.iter().all(|h| h.path != p));
+
+        // Folders only.
+        let (h, _) = search(&SearchOptions {
+            include_files: false,
+            ..base.clone()
+        });
+        let only = names(&h, p);
+        assert!(h.iter().all(|h| h.is_dir), "{only:?}");
+        assert!(only.contains(&"src/nested".to_string()));
+        assert!(only.contains(&"node_modules".to_string()));
+        assert!(!only.contains(&"src".to_string()), "src has no 'n'");
+
+        // Files only.
+        let (h, _) = search(&SearchOptions {
+            include_folders: false,
+            ..base.clone()
+        });
+        assert!(h.iter().all(|h| !h.is_dir));
+        assert!(names(&h, p).contains(&"src/main.rs".to_string()));
+
+        // Text searches never list folders.
+        let (h, _) = search(&SearchOptions {
+            name_pattern: String::new(),
+            content: "hello".into(),
+            ..base.clone()
+        });
+        assert!(!h.is_empty() && h.iter().all(|h| !h.is_dir));
+
+        // A size limit only applies to files, so folders drop out.
+        let (h, _) = search(&SearchOptions {
+            min_size: Some(1),
+            ..base.clone()
+        });
+        assert!(h.iter().all(|h| !h.is_dir));
+
+        // Neither, or folders-only with text, is an error.
+        let none = SearchOptions {
+            include_files: false,
+            include_folders: false,
+            ..base.clone()
+        };
+        assert!(run(&none, &Default::default(), &Default::default(), |_| {}).is_err());
+        let bad = SearchOptions {
+            include_files: false,
+            content: "x".into(),
+            ..base
+        };
+        assert!(run(&bad, &Default::default(), &Default::default(), |_| {}).is_err());
+    }
+
+    #[test]
+    fn star_md_finds_every_md_file_by_default() {
+        let dir = tempfile::tempdir().unwrap();
+        let p = dir.path();
+        for d in [
+            "docs",
+            ".config/app",
+            "proj/node_modules/pkg",
+            "proj/target/doc",
+            "proj/build",
+            "proj/.git",
+            "realdir",
+        ] {
+            fs::create_dir_all(p.join(d)).unwrap();
+        }
+        for f in [
+            "README.md",
+            "NOTES.MD",
+            "space name.md",
+            ".dotfile.md",
+            "docs/guide.md",
+            ".config/app/help.md",
+            "proj/node_modules/pkg/README.md",
+            "proj/target/doc/api.md",
+            "proj/build/out.md",
+            "proj/.git/description.md",
+            "realdir/r.md",
+            "not-markdown.txt",
+            "md",
+            "readme.md.bak",
+        ] {
+            fs::write(p.join(f), "x\n").unwrap();
+        }
+        fs::write(p.join("proj/.gitignore"), "build/\n").unwrap();
+        #[cfg(unix)]
+        std::os::unix::fs::symlink(p.join("README.md"), p.join("link.md")).unwrap();
+
+        let mut o = opts(p);
+        o.name_pattern = "*.md".into();
+        let mut expected = vec![
+            ".config/app/help.md",
+            ".dotfile.md",
+            "NOTES.MD",
+            "README.md",
+            "docs/guide.md",
+            "link.md",
+            "proj/.git/description.md",
+            "proj/build/out.md",
+            "proj/node_modules/pkg/README.md",
+            "proj/target/doc/api.md",
+            "realdir/r.md",
+            "space name.md",
+        ];
+        if !cfg!(unix) {
+            expected.retain(|f| *f != "link.md");
+        }
+        assert_eq!(names(&search(&o).0, p), expected);
+
+        // Typing the pattern with quotes, as people often do, finds the same.
+        for q in ["\"*.md\"", "'*.md'", "\u{201c}*.md\u{201d}", "  *.md  "] {
+            o.name_pattern = q.into();
+            assert_eq!(names(&search(&o).0, p), expected, "pattern {q}");
+        }
+    }
+
+    #[test]
+    fn wildcards_match_file_name_not_folders() {
+        let f = |pat: &str, path: &str| {
+            let path = Path::new(path);
+            let name = path.file_name().unwrap().to_string_lossy();
+            NameFilter::new(pat, NameMode::Wildcard)
+                .unwrap()
+                .matches(&name, path)
+        };
+        assert!(f("*.md", "/home/eric/docs/a.md"));
+        assert!(f("*.md", "/home/eric/.local/A.MD"));
+        assert!(!f("*.md", "/home/eric/notes.md/file.txt"));
+        assert!(!f("*.md", "/home/eric/a.md.bak"));
+        // Bare words look at the name only, not at folder names.
+        assert!(!f("eric", "/home/eric/a.md"));
+        assert!(f("*.md;!eric", "/home/eric/a.md"));
+        assert!(!f("*.md;!read", "/home/eric/README.md"));
+        // A pattern with "/" is matched against the full path.
+        assert!(f("*/docs/*.md", "/home/eric/docs/a.md"));
+        assert!(!f("*/docs/*.md", "/home/eric/src/a.md"));
+        assert!(!f("*.md;!*/drafts/*", "/home/eric/drafts/a.md"));
+        // Several wildcards separated by ; , or spaces.
+        assert!(f("*.txt;*.md", "/x/a.md"));
+        assert!(f("*.txt, *.md", "/x/a.md"));
+        assert!(f("*.txt *.md", "/x/a.md"));
+        assert!(f("\"*.txt\" \"*.md\"", "/x/a.md"));
+        // A phrase with a space (no wildcards) stays one "contains" pattern.
+        assert!(f("space name", "/x/my space name.md"));
+        assert!(!f("space name", "/x/space.md"));
+    }
+
+    #[test]
+    fn split_and_unquote() {
+        assert_eq!(split_wildcards("\"*.md\""), ["*.md"]);
+        assert_eq!(
+            split_wildcards("*.rs *.toml !*.lock"),
+            ["*.rs", "*.toml", "!*.lock"]
+        );
+        assert_eq!(split_wildcards("a b; *.c"), ["a b", "*.c"]);
+        assert_eq!(split_wildcards(" ; ,"), Vec::<String>::new());
+        assert_eq!(unquote("'x'"), "x");
+        assert_eq!(unquote("\"x"), "\"x");
     }
 
     #[test]
@@ -945,17 +1215,19 @@ mod tests {
         let d = fixture();
         let mut o = opts(d.path());
         o.content = "hello".into();
-        let n = names(&search(&o).0, d.path());
-        assert!(!n.iter().any(|p| p.starts_with("node_modules")));
-        assert!(!n.iter().any(|p| p.starts_with(".hidden")));
-        assert!(n.contains(&"ignored_dir/x.txt".to_string()));
-
-        o.include_hidden = true;
-        o.exclude_dirs.clear();
-        o.respect_gitignore = true;
+        // Defaults search everything: hidden, gitignored, node_modules.
         let n = names(&search(&o).0, d.path());
         assert!(n.contains(&"node_modules/pkg/index.js".to_string()));
         assert!(n.contains(&".hidden/secret.txt".to_string()));
+        assert!(n.contains(&"ignored_dir/x.txt".to_string()));
+
+        // Each kind of skipping is opt-in.
+        o.include_hidden = false;
+        o.exclude_dirs = vec!["node_modules".into()];
+        o.respect_gitignore = true;
+        let n = names(&search(&o).0, d.path());
+        assert!(!n.iter().any(|p| p.starts_with("node_modules")));
+        assert!(!n.iter().any(|p| p.starts_with(".hidden")));
         assert!(!n.contains(&"ignored_dir/x.txt".to_string()));
     }
 

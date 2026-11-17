@@ -28,6 +28,7 @@ pub fn write_csv<W: Write>(w: W, hits: &[FileHit]) -> io::Result<()> {
         "modified",
         "hits",
         "hit_lines",
+        "type",
     ])?;
     for h in hits {
         let name = h
@@ -48,6 +49,7 @@ pub fn write_csv<W: Write>(w: W, hits: &[FileHit]) -> io::Result<()> {
             &format_time(h.modified),
             &h.hits.to_string(),
             &h.hit_lines.to_string(),
+            if h.is_dir { "folder" } else { "file" },
         ])?;
     }
     wtr.flush()
@@ -56,6 +58,11 @@ pub fn write_csv<W: Write>(w: W, hits: &[FileHit]) -> io::Result<()> {
 /// Plain text: each file followed by its matching lines.
 pub fn write_text<W: Write>(mut w: W, hits: &[FileHit]) -> io::Result<()> {
     for h in hits {
+        if h.is_dir {
+            // A trailing slash marks folders.
+            writeln!(w, "{}/", h.path.display())?;
+            continue;
+        }
         if h.hit_lines == 0 {
             writeln!(w, "{}", h.path.display())?;
             continue;
@@ -80,6 +87,7 @@ mod tests {
 
     fn sample() -> Vec<FileHit> {
         vec![FileHit {
+            is_dir: false,
             path: PathBuf::from("/tmp/a, b/file.txt"),
             size: 12,
             modified: None,

@@ -26,39 +26,51 @@ pub struct Args {
     pub case_sensitive: bool,
     pub word: bool,
     pub hidden: bool,
+    pub skip_hidden: bool,
     pub gitignore: bool,
     pub no_recurse: bool,
     pub follow: bool,
     pub binary: bool,
     pub exclude: Option<String>,
+    /// `--type`: (include files, include folders).
+    pub types: Option<(bool, bool)>,
     pub context: Option<usize>,
     pub files_only: bool,
 }
 
 pub fn help() -> String {
     format!(
-        "{APP_NAME} {ver} — fast file search\n\n\
-Usage:\n  {APP_ID} [OPTIONS] [FOLDER...]          open the GUI (prefilled)\n  {APP_ID} --cli [OPTIONS] [FOLDER...]    search from the terminal\n\n\
-Options:\n\
-  -n, --name PATTERN     file-name wildcards, e.g. \"*.rs;*.toml;!*.lock\"\n\
-      --name-regex       treat --name as a regular expression\n\
-  -t, --text TEXT        text to find inside files\n\
-  -e, --regex            treat --text as a regular expression\n\
-  -s, --case             case-sensitive text search\n\
-  -w, --word             whole words only\n\
-  -H, --hidden           include hidden files and folders\n\
-  -g, --gitignore        respect .gitignore / .ignore files\n\
-      --no-recurse       do not search subfolders\n\
-  -L, --follow           follow symbolic links\n\
-  -b, --binary           also search binary files\n\
-  -x, --exclude LIST     folders to skip, ';'-separated (default: .git;node_modules;target;__pycache__)\n\
-  -C, --context N        context lines (GUI preview)\n\
-  -l, --files-only       CLI: print only file paths\n\
-      --auto             GUI: start searching immediately\n\
-      --cli              terminal mode (no window)\n\
-  -h, --help             show this help\n\
-  -V, --version          show version\n\n\
-CLI exit status: 0 = found, 1 = nothing found, 2 = error.\n",
+        "{APP_NAME} {ver} — fast file search
+
+Usage:
+  {APP_ID} [OPTIONS] [FOLDER...]          open the GUI (prefilled)
+  {APP_ID} --cli [OPTIONS] [FOLDER...]    search from the terminal
+
+Options:
+  -n, --name PATTERN     file/folder-name wildcards, e.g. \"*.rs;*.toml;!*.lock\"
+      --name-regex       treat --name as a regular expression
+      --type f|d|both    list files (f), folders (d) or both (default: both;
+                         text searches list files only)
+  -t, --text TEXT        text to find inside files
+  -e, --regex            treat --text as a regular expression
+  -s, --case             case-sensitive text search
+  -w, --word             whole words only
+  -H, --hidden           include hidden files and folders (the default)
+      --skip-hidden      skip hidden files and folders
+  -g, --gitignore        respect .gitignore / .ignore files
+      --no-recurse       do not search subfolders
+  -L, --follow           follow symbolic links
+  -b, --binary           also search binary files
+  -x, --exclude LIST     terminal mode: folders not to enter, ';'-separated
+  -C, --context N        context lines (GUI preview)
+  -l, --files-only       CLI: print only file paths
+      --auto             GUI: start searching immediately
+      --cli              terminal mode (no window)
+  -h, --help             show this help
+  -V, --version          show version
+
+CLI exit status: 0 = found, 1 = nothing found, 2 = error.
+",
         ver = crate::VERSION
     )
 }
@@ -87,11 +99,16 @@ impl Args {
                 "-s" | "--case" => a.case_sensitive = true,
                 "-w" | "--word" => a.word = true,
                 "-H" | "--hidden" => a.hidden = true,
+                "--skip-hidden" | "--no-hidden" => a.skip_hidden = true,
                 "-g" | "--gitignore" => a.gitignore = true,
                 "--no-recurse" => a.no_recurse = true,
                 "-L" | "--follow" => a.follow = true,
                 "-b" | "--binary" => a.binary = true,
                 "-x" | "--exclude" => a.exclude = Some(val(&arg)?),
+                "--type" => {
+                    let v = val(&arg)?;
+                    a.types = Some(parse_type(&v)?);
+                }
                 "-l" | "--files-only" => a.files_only = true,
                 "-C" | "--context" => {
                     let v = val(&arg)?;
@@ -104,6 +121,7 @@ impl Args {
     }
 
     pub fn to_options(&self) -> SearchOptions {
+        let (include_files, include_folders) = self.types.unwrap_or((true, true));
         let roots = if self.folders.is_empty() {
             vec![std::env::current_dir().unwrap_or_else(|_| ".".into())]
         } else {
@@ -125,9 +143,11 @@ impl Args {
             content_is_regex: self.regex,
             case_sensitive: self.case_sensitive,
             whole_word: self.word,
-            include_hidden: self.hidden,
+            include_hidden: self.hidden || !self.skip_hidden,
             respect_gitignore: self.gitignore,
             recurse: !self.no_recurse,
+            include_files,
+            include_folders,
             follow_symlinks: self.follow,
             skip_binary: !self.binary,
             exclude_dirs: match &self.exclude {
@@ -137,6 +157,18 @@ impl Args {
             context_lines: 0,
             ..defaults
         }
+    }
+}
+
+/// `--type` value: `f`, `d` or `both` (long forms accepted).
+fn parse_type(v: &str) -> Result<(bool, bool), String> {
+    match v.to_ascii_lowercase().as_str() {
+        "f" | "file" | "files" => Ok((true, false)),
+        "d" | "dir" | "dirs" | "folder" | "folders" | "directory" | "directories" => {
+            Ok((false, true))
+        }
+        "both" | "all" | "fd" | "df" => Ok((true, true)),
+        _ => Err(format!("bad --type '{v}' (use f, d or both)")),
     }
 }
 
@@ -198,5 +230,19 @@ mod tests {
         let o = p(&["-x", "a;b", "--binary", "/"]).unwrap().to_options();
         assert_eq!(o.exclude_dirs, ["a", "b"]);
         assert!(!o.skip_binary);
+        // Hidden files are searched unless --skip-hidden is given.
+        assert!(o.include_hidden);
+        assert!(!p(&["--skip-hidden"]).unwrap().to_options().include_hidden);
+        assert!(p(&[]).unwrap().to_options().exclude_dirs.is_empty());
+        // --type: both by default.
+        let o = p(&[]).unwrap().to_options();
+        assert!(o.include_files && o.include_folders);
+        let o = p(&["--type", "d"]).unwrap().to_options();
+        assert!(!o.include_files && o.include_folders);
+        let o = p(&["--type", "files"]).unwrap().to_options();
+        assert!(o.include_files && !o.include_folders);
+        assert!(p(&["--type", "both"]).unwrap().types == Some((true, true)));
+        assert!(p(&["--type", "x"]).is_err());
+        assert!(p(&["--type"]).is_err());
     }
 }

@@ -7,6 +7,7 @@ mod cli;
 mod export;
 mod platform;
 mod search;
+mod settings;
 mod ui;
 
 /// Display name. To rename the app, change this, `APP_ID`, `DESKTOP_ID` and the
