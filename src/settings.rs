@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Eric Allen
 
-//! Appearance and font settings: the Settings window, how the choices are
+//! Appearance and font settings: the Preferences window, how the choices are
 //! applied to egui, and system font discovery (through fontconfig's `fc-list`).
 
 use std::collections::BTreeMap;
@@ -16,17 +16,44 @@ use serde::{Deserialize, Serialize};
 /// Body text size egui was designed around; widget sizes scale from it.
 const EGUI_BODY_SIZE: f32 = 13.0;
 pub const DEFAULT_FONT_SIZE: f32 = 16.0;
-pub const MIN_FONT_SIZE: f32 = 10.0;
-pub const MAX_FONT_SIZE: f32 = 32.0;
-pub const MIN_SCALE: f32 = 0.75;
-pub const MAX_SCALE: f32 = 2.5;
+/// The text sizes offered (points). No sliders: a list and -/+ buttons.
+pub const FONT_SIZES: &[f32] = &[
+    10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 20.0, 22.0, 24.0, 26.0, 28.0, 30.0, 32.0,
+];
 /// WCAG AA contrast for normal text.
 pub const GOOD_CONTRAST: f32 = 4.5;
 
 const UBUNTU: &str = "Ubuntu-Light";
 const HACK: &str = "Hack";
-const UI_FONT_KEY: &str = "seeker-ui-font";
-const MONO_FONT_KEY: &str = "seeker-mono-font";
+const USER_FONT_KEY: &str = "seeker-user-font";
+
+/// The listed size closest to `size`.
+pub fn snap_font_size(size: f32) -> f32 {
+    let size = if size.is_finite() {
+        size
+    } else {
+        DEFAULT_FONT_SIZE
+    };
+    FONT_SIZES
+        .iter()
+        .copied()
+        .min_by(|a, b| (a - size).abs().total_cmp(&(b - size).abs()))
+        .unwrap_or(DEFAULT_FONT_SIZE)
+}
+
+/// Next listed size up (`up`) or down from `size`, staying in range.
+pub fn step_font_size(size: f32, up: bool) -> f32 {
+    let i = FONT_SIZES
+        .iter()
+        .position(|s| *s == snap_font_size(size))
+        .unwrap_or(0);
+    let j = if up {
+        (i + 1).min(FONT_SIZES.len() - 1)
+    } else {
+        i.saturating_sub(1)
+    };
+    FONT_SIZES[j]
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ThemeChoice {
@@ -66,6 +93,8 @@ impl FontChoice {
     }
 }
 
+/// Saved preferences. Unknown fields in older saved files (`mono_font`,
+/// `ui_scale` from the first 0.1.2 test build) are ignored.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Settings {
@@ -75,12 +104,11 @@ pub struct Settings {
     /// Use `text_color` instead of the automatic black/white.
     pub custom_text: bool,
     pub text_color: [u8; 3],
-    pub ui_font: FontChoice,
-    pub mono_font: FontChoice,
-    /// Body text size in points.
+    /// One font for the whole window, preview pane included.
+    #[serde(alias = "ui_font")]
+    pub font: FontChoice,
+    /// Text size in points, one of `FONT_SIZES`.
     pub font_size: f32,
-    /// Overall zoom of the interface (fields, buttons, spacing and text).
-    pub ui_scale: f32,
 }
 
 impl Default for Settings {
@@ -90,10 +118,8 @@ impl Default for Settings {
             background: [250, 246, 232],
             custom_text: false,
             text_color: [20, 20, 20],
-            ui_font: FontChoice::ubuntu(),
-            mono_font: FontChoice::hack(),
+            font: FontChoice::ubuntu(),
             font_size: DEFAULT_FONT_SIZE,
-            ui_scale: 1.0,
         }
     }
 }
@@ -239,14 +265,14 @@ impl Settings {
 
     /// Text sizes and widget spacing, scaled from egui's defaults.
     pub fn apply_style(&self, style: &mut egui::Style) {
-        let s = self.font_size.clamp(MIN_FONT_SIZE, MAX_FONT_SIZE);
+        let s = snap_font_size(self.font_size);
         let k = s / EGUI_BODY_SIZE;
         style.text_styles = BTreeMap::from([
-            (TextStyle::Small, FontId::proportional(s * 0.75)),
+            (TextStyle::Small, FontId::proportional((s * 0.8).round())),
             (TextStyle::Body, FontId::proportional(s)),
             (TextStyle::Button, FontId::proportional(s)),
-            (TextStyle::Heading, FontId::proportional(s * 1.4)),
-            (TextStyle::Monospace, FontId::monospace(s * 0.95)),
+            (TextStyle::Heading, FontId::proportional((s * 1.4).round())),
+            (TextStyle::Monospace, FontId::monospace(s)),
         ]);
         let d = egui::style::Spacing::default();
         let sp = &mut style.spacing;
@@ -258,60 +284,40 @@ impl Settings {
         sp.icon_spacing = d.icon_spacing * k;
         sp.combo_width = d.combo_width * k;
         sp.text_edit_width = d.text_edit_width * k;
-        sp.slider_width = d.slider_width * k;
         sp.indent = d.indent * k;
         sp.menu_margin = d.menu_margin;
     }
 
-    pub fn font_definitions(&self, loaded: &LoadedFonts) -> FontDefinitions {
+    pub fn font_definitions(&self, loaded: &LoadedFont) -> FontDefinitions {
         let mut fonts = FontDefinitions::default();
         let prop = fonts.families.entry(FontFamily::Proportional).or_default();
         // Hack as a fallback so symbols like ▲▼ render.
         prop.insert(1.min(prop.len()), HACK.to_owned());
-        let place = |fonts: &mut FontDefinitions,
-                     fam: FontFamily,
-                     choice: &FontChoice,
-                     data: Option<&Arc<FontData>>,
-                     key: &str| {
-            let first = match (choice, data) {
-                (FontChoice::System { .. }, Some(d)) => {
-                    fonts.font_data.insert(key.to_owned(), d.clone());
-                    key.to_owned()
-                }
-                (FontChoice::Builtin(k), _) if k == HACK || k == UBUNTU => k.clone(),
-                _ => return,
-            };
+        let first = match (&self.font, loaded.data.as_ref()) {
+            (FontChoice::System { .. }, Some(d)) => {
+                fonts.font_data.insert(USER_FONT_KEY.to_owned(), d.clone());
+                USER_FONT_KEY.to_owned()
+            }
+            (FontChoice::Builtin(k), _) if k == HACK || k == UBUNTU => k.clone(),
+            _ => return fonts,
+        };
+        // The same font everywhere, preview pane (monospace family) included.
+        for fam in [FontFamily::Proportional, FontFamily::Monospace] {
             let list = fonts.families.entry(fam).or_default();
             list.retain(|n| *n != first);
-            list.insert(0, first);
-        };
-        place(
-            &mut fonts,
-            FontFamily::Proportional,
-            &self.ui_font,
-            loaded.ui.as_ref(),
-            UI_FONT_KEY,
-        );
-        place(
-            &mut fonts,
-            FontFamily::Monospace,
-            &self.mono_font,
-            loaded.mono.as_ref(),
-            MONO_FONT_KEY,
-        );
+            list.insert(0, first.clone());
+        }
         fonts
     }
 }
 
 // ------------------------------------------------------------ font files
 
-/// Font files read from disk for the current choices.
+/// The font file read from disk for the current choice.
 #[derive(Default)]
-pub struct LoadedFonts {
-    ui_src: Option<FontChoice>,
-    mono_src: Option<FontChoice>,
-    ui: Option<Arc<FontData>>,
-    mono: Option<Arc<FontData>>,
+pub struct LoadedFont {
+    src: Option<FontChoice>,
+    data: Option<Arc<FontData>>,
 }
 
 fn load_font(choice: &FontChoice) -> Result<Option<Arc<FontData>>, String> {
@@ -331,34 +337,24 @@ fn load_font(choice: &FontChoice) -> Result<Option<Arc<FontData>>, String> {
     }
 }
 
-impl LoadedFonts {
-    /// Loads files for changed choices. On failure the choice falls back to
-    /// the built-in font and the error is returned.
-    pub fn refresh(&mut self, s: &mut Settings) -> Vec<String> {
-        let mut errs = Vec::new();
-        if self.ui_src.as_ref() != Some(&s.ui_font) {
-            match load_font(&s.ui_font) {
-                Ok(d) => self.ui = d,
-                Err(e) => {
-                    errs.push(e);
-                    s.ui_font = FontChoice::ubuntu();
-                    self.ui = None;
-                }
-            }
-            self.ui_src = Some(s.ui_font.clone());
+impl LoadedFont {
+    /// Loads the file if the choice changed. On failure the choice falls back
+    /// to the built-in font and the error is returned.
+    pub fn refresh(&mut self, s: &mut Settings) -> Option<String> {
+        if self.src.as_ref() == Some(&s.font) {
+            return None;
         }
-        if self.mono_src.as_ref() != Some(&s.mono_font) {
-            match load_font(&s.mono_font) {
-                Ok(d) => self.mono = d,
-                Err(e) => {
-                    errs.push(e);
-                    s.mono_font = FontChoice::hack();
-                    self.mono = None;
-                }
+        let mut err = None;
+        match load_font(&s.font) {
+            Ok(d) => self.data = d,
+            Err(e) => {
+                err = Some(e);
+                s.font = FontChoice::ubuntu();
+                self.data = None;
             }
-            self.mono_src = Some(s.mono_font.clone());
         }
-        errs
+        self.src = Some(s.font.clone());
+        err
     }
 }
 
@@ -445,25 +441,37 @@ pub fn discover_system_fonts() -> Vec<SystemFont> {
 // ------------------------------------------------------------- window
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum Tab {
+pub enum Page {
     #[default]
     Appearance,
     Font,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-enum FontTarget {
-    #[default]
-    Interface,
-    Preview,
+/// What the user asked for with the buttons at the bottom of Preferences.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PrefsAction {
+    /// Persist the current settings; keep the window open.
+    Save,
+    /// Go back to the last saved settings; keep the window open.
+    Cancel,
+    /// Save, then close (from the "unsaved changes" question).
+    SaveAndClose,
+    /// Go back to the last saved settings and close.
+    DiscardAndClose,
+    /// Close; nothing to save.
+    Close,
 }
 
-/// State of the Settings window that isn't saved.
+/// State of the Preferences window that isn't saved.
 #[derive(Default)]
-pub struct SettingsWindow {
+pub struct PrefsWindow {
     pub open: bool,
-    pub tab: Tab,
-    target: FontTarget,
+    pub page: Page,
+    /// Showing "Save changes before closing?".
+    confirm_close: bool,
+    /// When the window was opened; it's redrawn for a moment after that,
+    /// because a new native window can map after its first frame was drawn.
+    opened_at: Option<std::time::Instant>,
     filter: String,
     fonts: Option<Vec<SystemFont>>,
     fonts_rx: Option<crossbeam_channel::Receiver<Vec<SystemFont>>>,
@@ -481,10 +489,13 @@ const PRESETS: &[(&str, [u8; 3])] = &[
     ("Black", [0, 0, 0]),
 ];
 
-impl SettingsWindow {
-    pub fn open_at(&mut self, tab: Tab) {
+pub const PREFS_TITLE: &str = "Seeker Preferences";
+
+impl PrefsWindow {
+    pub fn open(&mut self) {
         self.open = true;
-        self.tab = tab;
+        self.confirm_close = false;
+        self.opened_at = Some(std::time::Instant::now());
     }
 
     fn poll_fonts(&mut self, ctx: &egui::Context) {
@@ -510,37 +521,172 @@ impl SettingsWindow {
         }
     }
 
-    pub fn show(&mut self, ctx: &egui::Context, s: &mut Settings) {
+    /// Shows Preferences as its own desktop window (an egui viewport). Where
+    /// separate windows aren't supported egui embeds it in the main window.
+    /// `s` is edited live; `saved` is what's on disk.
+    pub fn show(
+        &mut self,
+        ctx: &egui::Context,
+        s: &mut Settings,
+        saved: &Settings,
+    ) -> Option<PrefsAction> {
         if !self.open {
-            return;
+            return None;
         }
-        let mut open = true;
-        let em = s.font_size;
-        egui::Window::new("Settings")
-            .open(&mut open)
-            .collapsible(false)
-            .resizable(true)
-            .default_width(em * 34.0)
-            .pivot(egui::Align2::CENTER_CENTER)
-            .default_pos(ctx.content_rect().center())
-            .show(ctx, |ui| {
-                ui.horizontal(|ui| {
-                    ui.selectable_value(&mut self.tab, Tab::Appearance, "Appearance");
-                    ui.selectable_value(&mut self.tab, Tab::Font, "Font");
+        // Sized from the saved text size so the window doesn't jump around
+        // while sizes are being tried.
+        let em = snap_font_size(saved.font_size);
+        let builder = egui::ViewportBuilder::default()
+            .with_title(PREFS_TITLE)
+            .with_app_id(crate::DESKTOP_ID)
+            .with_inner_size([(em * 44.0).min(1100.0), (em * 34.0).min(820.0)])
+            .with_min_inner_size([480.0, 400.0]);
+        let id = egui::ViewportId::from_hash_of("seeker-preferences");
+        if self
+            .opened_at
+            .is_some_and(|t| t.elapsed() < std::time::Duration::from_millis(1500))
+        {
+            ctx.request_repaint_after(std::time::Duration::from_millis(50));
+        }
+        ctx.show_viewport_immediate(id, builder, |ui, class| {
+            crate::platform::debug(&format!(
+                "preferences viewport frame (embedded: {})",
+                class == egui::ViewportClass::EmbeddedWindow
+            ));
+            let dirty = s != saved;
+            if ui.ctx().input(|i| i.viewport().close_requested()) {
+                // The title-bar close button works like "Close".
+                if dirty {
+                    ui.ctx()
+                        .send_viewport_cmd(egui::ViewportCommand::CancelClose);
+                    self.confirm_close = true;
+                } else {
+                    return Some(PrefsAction::Close);
+                }
+            }
+            if class == egui::ViewportClass::EmbeddedWindow {
+                ui.set_min_size(egui::vec2(em * 40.0, em * 30.0));
+            }
+            // The Preferences window keeps the saved text size while sizes
+            // are tried, so its buttons stay put; the main window previews.
+            saved.apply_style(ui.style_mut());
+            self.contents(ui, s, dirty)
+        })
+    }
+
+    fn contents(
+        &mut self,
+        ui: &mut egui::Ui,
+        s: &mut Settings,
+        dirty: bool,
+    ) -> Option<PrefsAction> {
+        let em = egui::TextStyle::Body.resolve(ui.style()).size;
+        let pad = em.round();
+        let style = ui.style().clone();
+        let mut action = None;
+
+        egui::Panel::bottom("prefs_buttons")
+            .resizable(false)
+            .frame(
+                egui::Frame::side_top_panel(&style)
+                    .inner_margin(egui::Margin::symmetric(pad as i8, (pad * 0.6) as i8)),
+            )
+            .show(ui, |ui| {
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    if self.confirm_close {
+                        if ui.button("Keep editing").clicked() {
+                            self.confirm_close = false;
+                        }
+                        if ui.button("Discard").clicked() {
+                            action = Some(PrefsAction::DiscardAndClose);
+                        }
+                        if ui.button(RichText::new("Save").strong()).clicked() {
+                            action = Some(PrefsAction::SaveAndClose);
+                        }
+                        ui.add(
+                            egui::Label::new(
+                                RichText::new("Save your changes before closing?").strong(),
+                            )
+                            .wrap(),
+                        );
+                        return;
+                    }
+                    if ui
+                        .add_enabled(dirty, egui::Button::new(RichText::new("Save").strong()))
+                        .on_hover_text("Keep these settings")
+                        .clicked()
+                    {
+                        action = Some(PrefsAction::Save);
+                    }
+                    if ui
+                        .add_enabled(dirty, egui::Button::new("Cancel"))
+                        .on_hover_text("Go back to the last saved settings")
+                        .clicked()
+                    {
+                        action = Some(PrefsAction::Cancel);
+                    }
+                    if ui.button("Close").clicked() {
+                        if dirty {
+                            self.confirm_close = true;
+                        } else {
+                            action = Some(PrefsAction::Close);
+                        }
+                    }
+                    if dirty {
+                        ui.add(egui::Label::new(RichText::new("Unsaved changes").weak()).wrap());
+                    }
                 });
-                ui.separator();
-                match self.tab {
-                    Tab::Appearance => self.appearance(ui, s),
-                    Tab::Font => {
-                        self.poll_fonts(ctx);
-                        self.font(ui, s);
+            });
+
+        egui::Panel::left("prefs_nav")
+            .resizable(false)
+            .exact_size(em * 10.0)
+            .frame(egui::Frame::side_top_panel(&style).inner_margin(pad * 0.75))
+            .show(ui, |ui| {
+                ui.add_space(pad * 0.25);
+                for (page, label) in [
+                    (Page::Appearance, "Appearance"),
+                    (Page::Font, "Font and Size"),
+                ] {
+                    let sel = self.page == page;
+                    let b = egui::Button::selectable(sel, RichText::new(label).size(em))
+                        .min_size(egui::vec2(ui.available_width(), em * 2.0));
+                    if ui.add(b).clicked() {
+                        self.page = page;
                     }
                 }
             });
-        self.open = open;
+
+        egui::CentralPanel::default()
+            .frame(egui::Frame::central_panel(&style).inner_margin(pad))
+            .show(ui, |ui| {
+                egui::Frame::group(&style)
+                    .inner_margin(pad)
+                    .corner_radius(6.0)
+                    .show(ui, |ui| {
+                        ui.set_width(ui.available_width());
+                        egui::ScrollArea::vertical()
+                            .auto_shrink([false, false])
+                            .show(ui, |ui| match self.page {
+                                Page::Appearance => {
+                                    ui.heading("Appearance");
+                                    ui.add_space(pad * 0.5);
+                                    self.appearance(ui, s);
+                                }
+                                Page::Font => {
+                                    ui.heading("Font and Size");
+                                    ui.add_space(pad * 0.5);
+                                    self.poll_fonts(ui.ctx());
+                                    self.font(ui, s);
+                                }
+                            });
+                    });
+            });
+        action
     }
 
     fn appearance(&mut self, ui: &mut egui::Ui, s: &mut Settings) {
+        let em = egui::TextStyle::Body.resolve(ui.style()).size;
         let system_dark = ui.ctx().system_theme() == Some(Theme::Dark);
         ui.label(RichText::new("Theme").strong());
         ui.horizontal_wrapped(|ui| {
@@ -559,10 +705,8 @@ impl SettingsWindow {
         });
         ui.horizontal_wrapped(|ui| {
             for (name, c) in PRESETS {
-                let (r, resp) = ui.allocate_exact_size(
-                    egui::vec2(s.font_size * 1.8, s.font_size * 1.4),
-                    egui::Sense::click(),
-                );
+                let (r, resp) =
+                    ui.allocate_exact_size(egui::vec2(em * 1.8, em * 1.4), egui::Sense::click());
                 let selected = s.theme == ThemeChoice::Custom && s.background == *c;
                 ui.painter().rect_filled(r, 3.0, rgb(*c));
                 let stroke = if selected {
@@ -595,7 +739,7 @@ impl SettingsWindow {
             .fill(rgb(bg))
             .stroke(egui::Stroke::new(1.0, rgb(mix(bg, fg, 0.3))))
             .corner_radius(4.0)
-            .inner_margin(s.font_size * 0.75)
+            .inner_margin(em * 0.75)
             .show(ui, |ui| {
                 ui.set_width(ui.available_width());
                 ui.label(
@@ -632,47 +776,58 @@ impl SettingsWindow {
     fn font(&mut self, ui: &mut egui::Ui, s: &mut Settings) {
         ui.label(RichText::new("Text size").strong());
         ui.horizontal(|ui| {
-            if ui.button(" A− ").on_hover_text("Smaller text").clicked() {
-                s.font_size = (s.font_size - 1.0).max(MIN_FONT_SIZE);
-            }
-            ui.add(
-                egui::Slider::new(&mut s.font_size, MIN_FONT_SIZE..=MAX_FONT_SIZE)
-                    .step_by(1.0)
-                    .suffix(" pt"),
-            );
-            if ui.button(" A+ ").on_hover_text("Larger text").clicked() {
-                s.font_size = (s.font_size + 1.0).min(MAX_FONT_SIZE);
-            }
-        });
-        ui.label(RichText::new("Interface scale").strong());
-        ui.horizontal(|ui| {
-            let mut pct = (s.ui_scale * 100.0).round();
+            let cur = snap_font_size(s.font_size);
             if ui
-                .add(
-                    egui::Slider::new(&mut pct, MIN_SCALE * 100.0..=MAX_SCALE * 100.0)
-                        .step_by(5.0)
-                        .suffix(" %"),
-                )
-                .changed()
+                .add_enabled(cur > FONT_SIZES[0], egui::Button::new("  −  "))
+                .on_hover_text("Smaller text")
+                .clicked()
             {
-                s.ui_scale = pct / 100.0;
+                s.font_size = step_font_size(cur, false);
             }
-            ui.weak("Enlarges fields, buttons and text. Ctrl + / Ctrl − also work.");
+            egui::ComboBox::from_id_salt("font_size")
+                .selected_text(format!("{cur:.0} pt"))
+                .height(f32::INFINITY)
+                .width(ui.spacing().interact_size.x * 2.2)
+                .show_ui(ui, |ui| {
+                    for &sz in FONT_SIZES {
+                        let label = if sz == DEFAULT_FONT_SIZE {
+                            format!("{sz:.0} pt (default)")
+                        } else {
+                            format!("{sz:.0} pt")
+                        };
+                        ui.selectable_value(&mut s.font_size, sz, label);
+                    }
+                });
+            if ui
+                .add_enabled(
+                    cur < FONT_SIZES[FONT_SIZES.len() - 1],
+                    egui::Button::new("  +  "),
+                )
+                .on_hover_text("Larger text")
+                .clicked()
+            {
+                s.font_size = step_font_size(cur, true);
+            }
         });
-        ui.add_space(6.0);
+        ui.weak("Fields, buttons and spacing grow with the text.");
+        ui.add_space(8.0);
 
         ui.label(RichText::new("Font").strong());
         ui.horizontal(|ui| {
-            ui.radio_value(&mut self.target, FontTarget::Interface, "Interface");
-            ui.radio_value(&mut self.target, FontTarget::Preview, "Preview pane");
-        });
-        let current = match self.target {
-            FontTarget::Interface => &mut s.ui_font,
-            FontTarget::Preview => &mut s.mono_font,
-        };
-        ui.horizontal(|ui| {
             ui.label("Current:");
-            ui.label(RichText::new(current.label()).strong());
+            ui.label(RichText::new(s.font.label()).strong());
+        });
+        // Sample in the chosen font and size (this window itself keeps the
+        // saved size until Save).
+        egui::Frame::group(ui.style()).show(ui, |ui| {
+            ui.set_width(ui.available_width());
+            ui.add(
+                egui::Label::new(
+                    RichText::new("The quick brown fox jumps over the lazy dog. 0123456789")
+                        .size(snap_font_size(s.font_size)),
+                )
+                .wrap(),
+            );
         });
         ui.horizontal(|ui| {
             ui.label("Find:");
@@ -687,16 +842,15 @@ impl SettingsWindow {
         egui::Frame::group(ui.style()).show(ui, |ui| {
             egui::ScrollArea::vertical()
                 .id_salt("font_list")
-                .max_height(row_h * 8.0)
+                .max_height(row_h * 7.0)
                 .auto_shrink([false, true])
                 .show(ui, |ui| {
                     for b in [FontChoice::ubuntu(), FontChoice::hack()] {
                         let label = b.label();
-                        if filter.is_empty() || label.to_lowercase().contains(&filter) {
-                            let sel = *current == b;
-                            if ui.selectable_label(sel, label).clicked() {
-                                *current = b;
-                            }
+                        if (filter.is_empty() || label.to_lowercase().contains(&filter))
+                            && ui.selectable_label(s.font == b, label).clicked()
+                        {
+                            s.font = b;
                         }
                     }
                     match &self.fonts {
@@ -710,18 +864,17 @@ impl SettingsWindow {
                             ui.weak("No system fonts found (fontconfig's fc-list is missing).");
                         }
                         Some(list) => {
-                            for f in list
-                                .iter()
-                                .filter(|f| filter.is_empty() || f.family.to_lowercase().contains(&filter))
-                            {
-                                let sel = matches!(current, FontChoice::System { family, .. } if *family == f.family);
+                            for f in list.iter().filter(|f| {
+                                filter.is_empty() || f.family.to_lowercase().contains(&filter)
+                            }) {
+                                let sel = matches!(&s.font, FontChoice::System { family, .. } if *family == f.family);
                                 let label = if f.monospace {
                                     format!("{}  (monospace)", f.family)
                                 } else {
                                     f.family.clone()
                                 };
                                 if ui.selectable_label(sel, label).clicked() {
-                                    *current = FontChoice::System {
+                                    s.font = FontChoice::System {
                                         family: f.family.clone(),
                                         path: f.path.clone(),
                                         index: f.index,
@@ -732,17 +885,11 @@ impl SettingsWindow {
                     }
                 });
         });
-        ui.add_space(6.0);
-        ui.label("Sample:");
-        ui.label("The quick brown fox jumps over the lazy dog. 0123456789");
-        ui.label(RichText::new("fn main() { println!(\"Hello\"); }  // preview pane").monospace());
-        ui.add_space(6.0);
-        if ui.button("Reset font settings").clicked() {
+        ui.add_space(8.0);
+        if ui.button("Reset font and size").clicked() {
             let d = Settings::default();
-            s.ui_font = d.ui_font;
-            s.mono_font = d.mono_font;
+            s.font = d.font;
             s.font_size = d.font_size;
-            s.ui_scale = d.ui_scale;
         }
     }
 }
@@ -773,7 +920,47 @@ mod tests {
         let mut st = egui::Style::default();
         s.apply_style(&mut st);
         assert_eq!(st.text_styles[&TextStyle::Body].size, DEFAULT_FONT_SIZE);
+        // One size for everything, preview pane included.
+        assert_eq!(
+            st.text_styles[&TextStyle::Monospace].size,
+            DEFAULT_FONT_SIZE
+        );
         assert!(st.spacing.interact_size.y > egui::style::Spacing::default().interact_size.y);
+    }
+
+    #[test]
+    fn font_sizes_snap_and_step_without_running_away() {
+        assert!(FONT_SIZES.contains(&DEFAULT_FONT_SIZE));
+        assert_eq!(snap_font_size(16.4), 16.0);
+        assert_eq!(snap_font_size(19.0), 18.0);
+        assert_eq!(snap_font_size(500.0), 32.0);
+        assert_eq!(snap_font_size(-3.0), 10.0);
+        assert_eq!(snap_font_size(f32::NAN), DEFAULT_FONT_SIZE);
+        assert_eq!(step_font_size(18.0, true), 20.0);
+        assert_eq!(step_font_size(18.0, false), 17.0);
+        assert_eq!(step_font_size(32.0, true), 32.0);
+        assert_eq!(step_font_size(10.0, false), 10.0);
+        // A huge saved size can't blow up the layout.
+        let s = Settings {
+            font_size: 900.0,
+            ..Default::default()
+        };
+        let mut st = egui::Style::default();
+        s.apply_style(&mut st);
+        assert_eq!(st.text_styles[&TextStyle::Body].size, 32.0);
+    }
+
+    #[test]
+    fn one_font_for_everything() {
+        let s = Settings {
+            font: FontChoice::hack(),
+            ..Default::default()
+        };
+        let f = s.font_definitions(&LoadedFont::default());
+        assert_eq!(f.families[&FontFamily::Proportional][0], HACK);
+        assert_eq!(f.families[&FontFamily::Monospace][0], HACK);
+        let f = Settings::default().font_definitions(&LoadedFont::default());
+        assert_eq!(f.families[&FontFamily::Monospace][0], UBUNTU);
     }
 
     #[test]
@@ -787,6 +974,8 @@ mod tests {
         assert!(v.dark_mode);
         assert_eq!(v.panel_fill, Color32::BLACK);
         assert_eq!(v.override_text_color, Some(rgb([240, 240, 240])));
+        // Fields stay visible on black.
+        assert_ne!(v.text_edit_bg_color, Some(Color32::BLACK));
         let s = Settings {
             background: [240, 225, 196],
             ..s
@@ -797,7 +986,7 @@ mod tests {
     #[test]
     fn settings_roundtrip_and_old_files() {
         let s = Settings {
-            ui_font: FontChoice::System {
+            font: FontChoice::System {
                 family: "DejaVu Sans".into(),
                 path: "/usr/share/fonts/DejaVuSans.ttf".into(),
                 index: 0,
@@ -808,9 +997,15 @@ mod tests {
         let txt = ron::to_string(&s).unwrap();
         let back: Settings = ron::from_str(&txt).unwrap();
         assert_eq!(back, s);
-        // Settings saved by an older version (fields missing) load with defaults.
+        // Saved by the first 0.1.2 test build: ui_font/mono_font/ui_scale.
+        let old: Settings = ron::from_str(
+            r#"(theme:Custom,background:(240,225,196),ui_font:Builtin("Hack"),mono_font:Builtin("Hack"),font_size:18.0,ui_scale:1.5)"#,
+        )
+        .unwrap();
+        assert_eq!(old.theme, ThemeChoice::Custom);
+        assert_eq!(old.font, FontChoice::hack());
+        assert_eq!(old.font_size, 18.0);
         let old: Settings = ron::from_str("(theme: Dark)").unwrap();
-        assert_eq!(old.theme, ThemeChoice::Dark);
         assert_eq!(old.font_size, DEFAULT_FONT_SIZE);
     }
 

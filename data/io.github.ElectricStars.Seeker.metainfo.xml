@@ -92,6 +92,16 @@
   <content_rating type="oars-1.1"/>
 
   <releases>
+    <release version="0.1.2" date="2026-11-16" type="development">
+      <description>
+        <ul>
+          <li>Preferences window with Appearance (background color, light/dark theme) and Font and Size pages</li>
+          <li>One font and text size for the whole window, larger by default</li>
+          <li>Searches include hidden files and folders by default, so *.md finds every Markdown file</li>
+          <li>The search form fits any window width and text size</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.1" date="2026-11-11">
       <description>
         <ul>

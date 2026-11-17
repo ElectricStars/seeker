@@ -18,7 +18,7 @@ use crate::cli::Args;
 use crate::export;
 use crate::platform;
 use crate::search::{self, Event, FileHit, NameMode, SearchHandle, SearchOptions, Stats};
-use crate::settings::{self, LoadedFonts, Settings, SettingsWindow, Tab};
+use crate::settings::{self, LoadedFont, PrefsAction, PrefsWindow, Settings};
 use crate::{APP_ID, APP_NAME, DESKTOP_ID};
 
 const STORAGE_KEY: &str = "form";
@@ -220,12 +220,17 @@ pub struct SeekerApp {
     dialog_tx: Sender<DialogResult>,
     dialog_rx: Receiver<DialogResult>,
     focus_name: bool,
+    /// Height the search form needed last frame.
+    form_content_h: f32,
     applied_theme_key: Option<bool>,
+    /// Live settings: what's shown, including unsaved Preferences changes.
     settings: Settings,
+    /// The last saved settings (what Cancel goes back to).
+    saved_settings: Settings,
     /// Settings currently applied to the egui context.
     applied: Option<Settings>,
-    loaded_fonts: LoadedFonts,
-    settings_win: SettingsWindow,
+    loaded_font: LoadedFont,
+    prefs: PrefsWindow,
 }
 
 impl SeekerApp {
@@ -236,10 +241,15 @@ impl SeekerApp {
             .unwrap_or_default();
         form.migrate();
         form.apply_args(&args);
-        let settings: Settings = cc
+        let mut settings: Settings = cc
             .storage
             .and_then(|s| eframe::get_value(s, SETTINGS_KEY))
             .unwrap_or_default();
+        settings.font_size = settings::snap_font_size(settings.font_size);
+        // Text size is set in Preferences only: no Ctrl +/- zoom that can run
+        // away, and undo any zoom left over from the first 0.1.2 test build.
+        cc.egui_ctx.options_mut(|o| o.zoom_with_keyboard = false);
+        cc.egui_ctx.set_zoom_factor(1.0);
         let (dialog_tx, dialog_rx) = crossbeam_channel::unbounded();
         Self {
             form,
@@ -260,11 +270,13 @@ impl SeekerApp {
             dialog_tx,
             dialog_rx,
             focus_name: true,
+            form_content_h: 0.0,
             applied_theme_key: None,
+            saved_settings: settings.clone(),
             settings,
             applied: None,
-            loaded_fonts: LoadedFonts::default(),
-            settings_win: SettingsWindow::default(),
+            loaded_font: LoadedFont::default(),
+            prefs: PrefsWindow::default(),
         }
         .with_settings_applied(&cc.egui_ctx)
     }
@@ -274,38 +286,21 @@ impl SeekerApp {
         self
     }
 
-    /// Applies changed settings (theme, colors, fonts, sizes, zoom) to egui.
+    /// Applies changed settings (theme, colors, font, size) to egui.
     fn apply_settings(&mut self, ctx: &egui::Context) {
         let s = &mut self.settings;
-        s.font_size = s
-            .font_size
-            .clamp(settings::MIN_FONT_SIZE, settings::MAX_FONT_SIZE);
-        s.ui_scale = s.ui_scale.clamp(settings::MIN_SCALE, settings::MAX_SCALE);
-        // Ctrl +/- zoom changes egui's zoom directly; adopt it as the setting.
-        if let Some(a) = &self.applied
-            && (a.ui_scale - s.ui_scale).abs() < 1e-4
-            && (ctx.zoom_factor() - a.ui_scale).abs() > 1e-4
-        {
-            s.ui_scale = ctx
-                .zoom_factor()
-                .clamp(settings::MIN_SCALE, settings::MAX_SCALE);
-        }
+        s.font_size = settings::snap_font_size(s.font_size);
         let system_dark = ctx.system_theme() == Some(egui::Theme::Dark);
         let theme_key = (s.theme == settings::ThemeChoice::System).then_some(system_dark);
         if self.applied.as_ref() == Some(s) && self.applied_theme_key == theme_key {
             return;
         }
-        let errs = self.loaded_fonts.refresh(s);
-        if !errs.is_empty() {
-            self.message = Some((errs.join("; "), true));
+        if let Some(e) = self.loaded_font.refresh(s) {
+            self.message = Some((e, true));
         }
         let s = &self.settings;
-        let fonts_changed = self
-            .applied
-            .as_ref()
-            .is_none_or(|a| a.ui_font != s.ui_font || a.mono_font != s.mono_font);
-        if fonts_changed {
-            ctx.set_fonts(s.font_definitions(&self.loaded_fonts));
+        if self.applied.as_ref().is_none_or(|a| a.font != s.font) {
+            ctx.set_fonts(s.font_definitions(&self.loaded_font));
         }
         let visuals = s.visuals(system_dark);
         let theme = if visuals.dark_mode {
@@ -316,21 +311,31 @@ impl SeekerApp {
         ctx.set_theme(theme);
         ctx.set_visuals_of(theme, visuals);
         ctx.all_styles_mut(|st| s.apply_style(st));
-        if (ctx.zoom_factor() - s.ui_scale).abs() > 1e-4 {
-            ctx.set_zoom_factor(s.ui_scale);
-        }
-        if self.applied.is_some() {
-            // eframe saves every 30 s, but only while frames are drawn: make
-            // sure one is drawn after a change so it is saved even if idle.
-            ctx.request_repaint_after(Duration::from_secs(31));
-        }
         self.applied = Some(s.clone());
         self.applied_theme_key = theme_key;
     }
 
-    /// Width unit that follows the chosen text size (1.0 at egui's 13 pt).
-    fn k(ui: &egui::Ui) -> f32 {
-        egui::TextStyle::Body.resolve(ui.style()).size / 13.0
+    /// Handles the Save / Cancel / Close buttons of Preferences.
+    fn prefs_action(&mut self, action: PrefsAction, frame: &mut eframe::Frame) {
+        platform::debug(&format!("preferences action {action:?}"));
+        let save = matches!(action, PrefsAction::Save | PrefsAction::SaveAndClose);
+        let revert = matches!(action, PrefsAction::Cancel | PrefsAction::DiscardAndClose);
+        if save {
+            self.saved_settings = self.settings.clone();
+            if let Some(st) = frame.storage_mut() {
+                eframe::set_value(st, SETTINGS_KEY, &self.saved_settings);
+                st.flush();
+            }
+        }
+        if revert {
+            self.settings = self.saved_settings.clone();
+        }
+        if matches!(
+            action,
+            PrefsAction::SaveAndClose | PrefsAction::DiscardAndClose | PrefsAction::Close
+        ) {
+            self.prefs.open = false;
+        }
     }
 
     /// "No matching files", plus which form fields narrowed the search.
@@ -682,12 +687,9 @@ impl SeekerApp {
                 }
             });
             ui.menu_button("Settings", |ui| {
-                if ui.button("Appearance…").clicked() {
-                    self.settings_win.open_at(Tab::Appearance);
-                    ui.close();
-                }
-                if ui.button("Font and size…").clicked() {
-                    self.settings_win.open_at(Tab::Font);
+                if ui.button("Preferences…").clicked() {
+                    platform::debug("open preferences");
+                    self.prefs.open();
                     ui.close();
                 }
             });
@@ -702,138 +704,197 @@ impl SeekerApp {
 
     fn search_form(&mut self, ui: &mut egui::Ui) {
         let running = self.is_running();
-        let k = Self::k(ui);
-        egui::Grid::new("form")
-            .num_columns(2)
-            .spacing([8.0, 6.0])
-            .show(ui, |ui| {
-                ui.label("File name:");
-                ui.horizontal(|ui| {
-                    let r = ui.add(
-                        egui::TextEdit::singleline(&mut self.form.name_pattern)
-                            .hint_text("e.g. *.rs;*.toml;!*.lock   (empty = all files)")
-                            .desired_width(ui.available_width() - 150.0 * k),
-                    );
-                    if self.focus_name {
-                        r.request_focus();
-                        self.focus_name = false;
-                    }
-                    egui::ComboBox::from_id_salt("name_mode")
-                        .width(120.0 * k)
-                        .selected_text(match self.form.name_mode {
-                            NameMode::Wildcard => "Wildcards",
-                            NameMode::Regex => "Regex",
-                        })
-                        .show_ui(ui, |ui| {
-                            ui.selectable_value(
-                                &mut self.form.name_mode,
-                                NameMode::Wildcard,
-                                "Wildcards",
-                            );
-                            ui.selectable_value(&mut self.form.name_mode, NameMode::Regex, "Regex");
-                        });
-                });
-                ui.end_row();
+        let em = egui::TextStyle::Body.resolve(ui.style()).size;
+        let label_w = ["File name:", "Containing text:", "Look in:"]
+            .iter()
+            .map(|t| text_width(ui, t))
+            .fold(0.0, f32::max)
+            + 2.0;
+        let (mut do_search, mut do_stop, mut browse) = (false, false, false);
+        let form = &mut self.form;
+        let focus_name = &mut self.focus_name;
 
-                ui.label("Containing text:");
-                ui.horizontal(|ui| {
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.form.content)
-                            .hint_text("text to find inside files (empty = name search only)")
-                            .desired_width(ui.available_width() - 290.0 * k),
-                    );
-                    ui.checkbox(&mut self.form.content_regex, "Regex");
-                    ui.checkbox(&mut self.form.case_sensitive, "Match case");
-                    ui.checkbox(&mut self.form.whole_word, "Whole word");
-                });
-                ui.end_row();
-
-                ui.label("Look in:");
-                ui.horizontal(|ui| {
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.form.look_in)
-                            .hint_text("folders, separated by ;")
-                            .desired_width(ui.available_width() - 290.0 * k),
-                    );
-                    if ui
-                        .button("Browse…")
-                        .on_hover_text("Pick one or more folders")
-                        .clicked()
-                    {
-                        self.pick_folders(ui.ctx());
-                    }
-                    ui.checkbox(&mut self.form.recurse, "Subfolders");
-                    ui.add_space(8.0);
+        form_row(
+            ui,
+            "name",
+            "File name:",
+            label_w,
+            |ui, w| {
+                let r = ui.add(
+                    egui::TextEdit::singleline(&mut form.name_pattern)
+                        .hint_text("e.g. *.rs;*.toml;!*.lock   (empty = all files)")
+                        .desired_width(w),
+                );
+                if *focus_name {
+                    r.request_focus();
+                    *focus_name = false;
+                }
+            },
+            |ui| {
+                egui::ComboBox::from_id_salt("name_mode")
+                    .selected_text(match form.name_mode {
+                        NameMode::Wildcard => "Wildcards",
+                        NameMode::Regex => "Regex",
+                    })
+                    .show_ui(ui, |ui| {
+                        ui.selectable_value(&mut form.name_mode, NameMode::Wildcard, "Wildcards");
+                        ui.selectable_value(&mut form.name_mode, NameMode::Regex, "Regex");
+                    });
+            },
+        );
+        form_row(
+            ui,
+            "content",
+            "Containing text:",
+            label_w,
+            |ui, w| {
+                ui.add(
+                    egui::TextEdit::singleline(&mut form.content)
+                        .hint_text("text to find inside files (empty = name search only)")
+                        .desired_width(w),
+                );
+            },
+            |ui| {
+                ui.checkbox(&mut form.content_regex, "Regex");
+                ui.checkbox(&mut form.case_sensitive, "Match case");
+                ui.checkbox(&mut form.whole_word, "Whole word");
+            },
+        );
+        form_row(
+            ui,
+            "look_in",
+            "Look in:",
+            label_w,
+            |ui, w| {
+                ui.add(
+                    egui::TextEdit::singleline(&mut form.look_in)
+                        .hint_text("folders, separated by ;")
+                        .desired_width(w),
+                );
+            },
+            |ui| {
+                if ui
+                    .button("Browse…")
+                    .on_hover_text("Pick one or more folders")
+                    .clicked()
+                {
+                    browse = true;
+                }
+                ui.checkbox(&mut form.recurse, "Subfolders");
+                let (text, hint) = if running {
+                    ("Stop", "Esc")
+                } else {
+                    ("Search", "Enter")
+                };
+                if ui
+                    .add(
+                        egui::Button::new(RichText::new(text).strong())
+                            .min_size([em * 5.0, 0.0].into()),
+                    )
+                    .on_hover_text(hint)
+                    .clicked()
+                {
                     if running {
-                        if ui
-                            .add(
-                                egui::Button::new(RichText::new("Stop").strong())
-                                    .min_size([80.0 * k, 0.0].into()),
-                            )
-                            .on_hover_text("Esc")
-                            .clicked()
-                        {
-                            self.stop_search();
-                        }
-                    } else if ui
-                        .add(
-                            egui::Button::new(RichText::new("Search").strong())
-                                .min_size([80.0 * k, 0.0].into()),
-                        )
-                        .on_hover_text("Enter")
-                        .clicked()
-                    {
-                        let ctx = ui.ctx().clone();
-                        self.start_search(&ctx);
+                        do_stop = true;
+                    } else {
+                        do_search = true;
                     }
-                });
-                ui.end_row();
-            });
+                }
+            },
+        );
+        if browse {
+            self.pick_folders(ui.ctx());
+        }
+        if do_stop {
+            self.stop_search();
+        }
+        if do_search {
+            let ctx = ui.ctx().clone();
+            self.start_search(&ctx);
+        }
 
+        // Every group wraps as a unit and no field is wider than the window.
+        let full_w = ui.available_width();
+        let field_w = |w: f32| (w * em / 13.0).min(full_w * 0.6);
         let header = egui::CollapsingHeader::new("Options")
             .open(Some(self.form.show_options))
             .show(ui, |ui| {
+                let f = &mut self.form;
+                let sp = ui.spacing().item_spacing.x;
+                let pad = ui.spacing().button_padding.x * 2.0;
+                // Text fields are a little wider than their desired width (frame + margin).
+                let fpad = pad + 8.0;
                 ui.horizontal_wrapped(|ui| {
-                    ui.checkbox(&mut self.form.include_hidden, "Hidden files");
-                    ui.checkbox(&mut self.form.respect_gitignore, "Respect .gitignore");
-                    ui.checkbox(&mut self.form.follow_symlinks, "Follow symlinks");
-                    ui.checkbox(&mut self.form.skip_binary, "Skip binary files");
-                    ui.separator();
+                    let icon = ui.spacing().icon_width + ui.spacing().icon_spacing;
+                    for (v, t) in [
+                        (&mut f.include_hidden, "Hidden files"),
+                        (&mut f.respect_gitignore, "Respect .gitignore"),
+                        (&mut f.follow_symlinks, "Follow symlinks"),
+                        (&mut f.skip_binary, "Skip binary files"),
+                    ] {
+                        wrap_before(ui, icon + text_width(ui, t));
+                        ui.checkbox(v, t);
+                    }
+                    let combo_w = em * 3.5;
+                    wrap_before(ui, text_width(ui, "Context lines:") + sp + combo_w + pad);
                     ui.label("Context lines:");
-                    ui.add(egui::DragValue::new(&mut self.form.context_lines).range(0..=20));
+                    egui::ComboBox::from_id_salt("context_lines")
+                        .selected_text(f.context_lines.to_string())
+                        .width(combo_w)
+                        .show_ui(ui, |ui| {
+                            for n in 0..=10 {
+                                ui.selectable_value(&mut f.context_lines, n, n.to_string());
+                            }
+                        });
                 });
                 ui.horizontal_wrapped(|ui| {
+                    let ex_w = field_w(260.0);
+                    wrap_before(ui, text_width(ui, "Exclude folders:") + sp + ex_w + fpad);
                     ui.label("Exclude folders:");
                     ui.add(
-                        egui::TextEdit::singleline(&mut self.form.exclude_dirs)
+                        egui::TextEdit::singleline(&mut f.exclude_dirs)
                             .hint_text("none (e.g. .git;node_modules)")
-                            .desired_width(260.0 * k),
+                            .desired_width(ex_w),
                     );
-                    ui.separator();
+                    let sz_w = field_w(110.0);
+                    wrap_before(
+                        ui,
+                        text_width(ui, "Size:")
+                            + text_width(ui, "–")
+                            + 2.0 * (sz_w + fpad)
+                            + 4.0 * sp,
+                    );
                     ui.label("Size:");
                     ui.add(
-                        egui::TextEdit::singleline(&mut self.form.min_size)
+                        egui::TextEdit::singleline(&mut f.min_size)
                             .hint_text("min, e.g. 10K")
-                            .desired_width(110.0 * k),
+                            .desired_width(sz_w),
                     );
                     ui.label("–");
                     ui.add(
-                        egui::TextEdit::singleline(&mut self.form.max_size)
+                        egui::TextEdit::singleline(&mut f.max_size)
                             .hint_text("max, e.g. 5M")
-                            .desired_width(110.0 * k),
+                            .desired_width(sz_w),
                     );
-                    ui.separator();
+                    let dt_w = field_w(130.0);
+                    wrap_before(
+                        ui,
+                        text_width(ui, "Modified:")
+                            + text_width(ui, "–")
+                            + 2.0 * (dt_w + fpad)
+                            + 4.0 * sp,
+                    );
                     ui.label("Modified:");
                     ui.add(
-                        egui::TextEdit::singleline(&mut self.form.modified_after)
+                        egui::TextEdit::singleline(&mut f.modified_after)
                             .hint_text("from YYYY-MM-DD")
-                            .desired_width(130.0 * k),
+                            .desired_width(dt_w),
                     );
                     ui.label("–");
                     ui.add(
-                        egui::TextEdit::singleline(&mut self.form.modified_before)
+                        egui::TextEdit::singleline(&mut f.modified_before)
                             .hint_text("to YYYY-MM-DD")
-                            .desired_width(130.0 * k),
+                            .desired_width(dt_w),
                     );
                 });
             });
@@ -899,18 +960,32 @@ impl SeekerApp {
         let scroll_to = self.scroll_table.then_some(self.selected).flatten();
         self.scroll_table = false;
         let has_content = self.results.iter().any(|h| h.hit_lines > 0);
-        let k = Self::k(ui);
+        let size_w = text_width(ui, "999.9 KB") + 16.0;
+        let date_w = text_width(ui, "2026-11-16 20:17") + 16.0;
+        let hits_w = text_width(ui, "Hits 9999") + 8.0;
+        let rest = (ui.available_width() - size_w - date_w - hits_w - 40.0).max(160.0);
+        let (name_w, folder_w) = (rest * 0.38, rest * 0.62);
 
+        // Column widths are remembered per window width (in 40-point steps)
+        // and text size, so after a resize or a new text size the columns are
+        // laid out again to fit instead of running past the window edge.
+        let layout_key = (
+            (ui.available_width() / 40.0) as u32,
+            egui::TextStyle::Body.resolve(ui.style()).size as u32,
+        );
         let mut tb = TableBuilder::new(ui)
+            .id_salt(("results", layout_key))
             .striped(true)
             .resizable(true)
             .sense(Sense::click())
             .cell_layout(Layout::left_to_right(Align::Center))
-            .column(Column::initial(220.0 * k).at_least(80.0).clip(true))
-            .column(Column::initial(380.0 * k).at_least(80.0).clip(true))
-            .column(Column::initial(80.0 * k).at_least(50.0))
-            .column(Column::initial(130.0 * k).at_least(80.0))
-            .column(Column::remainder().at_least(50.0))
+            // Fixed columns sized for their contents, the two text columns
+            // share the rest, so the table fits the window at any text size.
+            .column(Column::initial(name_w).at_least(60.0).clip(true))
+            .column(Column::initial(folder_w).at_least(60.0).clip(true))
+            .column(Column::initial(size_w).at_least(40.0).clip(true))
+            .column(Column::initial(date_w).at_least(60.0).clip(true))
+            .column(Column::remainder().at_least(30.0).clip(true))
             .min_scrolled_height(0.0)
             .max_scroll_height(f32::INFINITY);
         if let Some(i) = scroll_to {
@@ -1243,6 +1318,78 @@ impl SeekerApp {
     }
 }
 
+/// Width of `text` in the body font.
+fn text_width(ui: &egui::Ui, text: &str) -> f32 {
+    egui::WidgetText::from(text)
+        .into_galley(
+            ui,
+            Some(egui::TextWrapMode::Extend),
+            f32::INFINITY,
+            egui::TextStyle::Body,
+        )
+        .size()
+        .x
+}
+
+/// In a `horizontal_wrapped` layout: starts a new line unless a group of
+/// widgets about `w` wide still fits on the current one.
+fn wrap_before(ui: &mut egui::Ui, w: f32) {
+    let sp = ui.spacing().item_spacing.x;
+    if ui.available_size_before_wrap().x < w + sp && ui.cursor().min.x > ui.max_rect().min.x + 1.0 {
+        ui.end_row();
+    }
+}
+
+/// One row of the search form: a label column, a text field that takes the
+/// remaining width, and controls on the right. If the controls don't fit next
+/// to a usable field (narrow window or large text), they wrap onto the next
+/// line under the field instead of running off the window.
+fn form_row(
+    ui: &mut egui::Ui,
+    id: &str,
+    label: &str,
+    label_w: f32,
+    mut field: impl FnMut(&mut egui::Ui, f32),
+    mut controls: impl FnMut(&mut egui::Ui),
+) {
+    let em = egui::TextStyle::Body.resolve(ui.style()).size;
+    let sp = ui.spacing().item_spacing.x;
+    // Width the controls took on one line, remembered per text size.
+    let key = egui::Id::unique(("seeker_form_row", id, em.to_bits()));
+    let known: Option<f32> = ui.ctx().data(|d| d.get_temp(key));
+    let controls_w = known.unwrap_or(em * 12.0);
+    let row_h = ui.spacing().interact_size.y;
+    let mut wrapped = false;
+    ui.horizontal(|ui| {
+        ui.allocate_ui_with_layout(
+            egui::vec2(label_w, row_h),
+            Layout::left_to_right(Align::Center),
+            |ui| {
+                ui.set_min_width(label_w);
+                ui.label(label);
+            },
+        );
+        let avail = ui.available_width();
+        if avail - controls_w - sp >= em * 10.0 {
+            field(ui, (avail - controls_w - sp).max(0.0));
+            let w = ui.horizontal(|ui| controls(ui)).response.rect.width();
+            if known.is_none_or(|k| (k - w).abs() > 0.5) {
+                ui.ctx().data_mut(|d| d.insert_temp(key, w));
+                ui.ctx().request_repaint();
+            }
+        } else {
+            field(ui, avail.max(0.0));
+            wrapped = true;
+        }
+    });
+    if wrapped {
+        ui.horizontal(|ui| {
+            ui.add_space(label_w + sp);
+            ui.horizontal_wrapped(|ui| controls(ui));
+        });
+    }
+}
+
 #[derive(Clone, Copy)]
 enum RowAction {
     Open,
@@ -1284,7 +1431,7 @@ fn format_count(n: u64) -> String {
 }
 
 impl eframe::App for SeekerApp {
-    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+    fn ui(&mut self, ui: &mut egui::Ui, frame: &mut eframe::Frame) {
         let ctx = ui.ctx().clone();
         self.apply_settings(&ctx);
         if self.auto_start {
@@ -1300,15 +1447,35 @@ impl eframe::App for SeekerApp {
         }
 
         egui::Panel::top("menu").show(ui, |ui| self.menu_bar(ui));
+        // The form never takes more than about half the window (it scrolls
+        // instead), so results and preview stay usable at large text sizes.
+        let form_max_h = (ui.available_height() * 0.5).max(120.0);
         egui::Panel::top("form")
             .frame(egui::Frame::side_top_panel(ui.style()).inner_margin(8.0))
-            .show(ui, |ui| self.search_form(ui));
+            .show(ui, |ui| {
+                // A panel keeps last frame's height, so ask for the height the
+                // form needed last time (capped) to let it grow when it needs to.
+                ui.set_min_height(self.form_content_h.min(form_max_h));
+                let out = egui::ScrollArea::vertical()
+                    .id_salt("form_scroll")
+                    .max_height(form_max_h)
+                    .auto_shrink([false, true])
+                    .show(ui, |ui| self.search_form(ui));
+                let h = out.content_size.y;
+                if (h - self.form_content_h).abs() > 0.5 {
+                    self.form_content_h = h;
+                    ui.ctx().request_repaint();
+                }
+            });
         egui::Panel::bottom("status").show(ui, |ui| self.status_bar(ui));
         egui::CentralPanel::default().show(ui, |ui| {
+            let avail_h = ui.available_height();
+            let row_h = ui.spacing().interact_size.y;
+            let max_preview = (avail_h - 2.5 * row_h).max(row_h);
             egui::Panel::bottom("preview")
                 .resizable(true)
-                .default_size(ui.available_height() * 0.45)
-                .size_range(80.0..=ui.available_height() - 80.0)
+                .default_size(avail_h * 0.45)
+                .size_range(row_h.min(max_preview)..=max_preview)
                 .show(ui, |ui| self.preview(ui));
             egui::CentralPanel::no_frame().show(ui, |ui| {
                 if self.results.is_empty() && !self.is_running() {
@@ -1326,16 +1493,22 @@ impl eframe::App for SeekerApp {
             });
         });
         self.windows(&ctx);
-        self.settings_win.show(&ctx, &mut self.settings);
+        if let Some(a) = self
+            .prefs
+            .show(&ctx, &mut self.settings, &self.saved_settings)
+        {
+            self.prefs_action(a, frame);
+        }
         if self.applied.as_ref() != Some(&self.settings) {
-            // Changed in the Settings window: apply on the next frame.
+            // Changed in Preferences: apply on the next frame.
             ctx.request_repaint();
         }
     }
 
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
         eframe::set_value(storage, STORAGE_KEY, &self.form);
-        eframe::set_value(storage, SETTINGS_KEY, &self.settings);
+        // Unsaved Preferences changes are not kept (only Save keeps them).
+        eframe::set_value(storage, SETTINGS_KEY, &self.saved_settings);
     }
 }
 
@@ -1345,7 +1518,7 @@ pub fn run(args: Args) -> Result<(), String> {
             .with_title(APP_NAME)
             .with_app_id(DESKTOP_ID)
             .with_inner_size([1240.0, 840.0])
-            .with_min_inner_size([640.0, 420.0]),
+            .with_min_inner_size([700.0, 520.0]),
         ..Default::default()
     };
     eframe::run_native(

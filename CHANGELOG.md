@@ -6,20 +6,27 @@ All notable changes to Seeker are listed here. The format follows
 ## [0.1.2] - Unreleased
 
 ### Added
-- **Settings** menu with an Appearance tab and a Font tab (#1, #2). Choices are saved and
-  restored on the next launch.
+- **Preferences** window (*Settings → Preferences…*) with a sidebar for its two pages,
+  *Appearance* and *Font and Size* (#1, #2, #5). It opens as its own window that can be moved
+  anywhere (#6); where separate windows are not supported it opens inside the main window.
   - Appearance: Light (new default), Dark, Follow system, or a custom background color
     (color picker plus presets). Text color is picked automatically for the best contrast,
-    or can be chosen; the tab shows the contrast ratio and warns when text would be hard to read.
-  - Font: pick the interface font and the preview-pane font from the built-in fonts or any
-    font installed on the system (found with fontconfig's `fc-list`), set the text size, and
-    an interface scale that enlarges fields, buttons and spacing (Ctrl +/− also work).
+    or can be chosen; the page shows the contrast ratio and warns when text would be hard to read.
+  - Font and Size: one font for everything, from the built-in fonts or any font installed on
+    the system (found with fontconfig's `fc-list`), and one text size picked from a list
+    (10–32 pt) or stepped with − / +. Fields, buttons and spacing grow with the text.
+  - Changes preview live in the main window. **Save** keeps them (the window stays open),
+    **Cancel** goes back to the last saved settings, **Close** with unsaved changes asks
+    whether to save or discard them.
 - `--skip-hidden` command-line option.
 - Wildcards typed in quotes (`"*.md"`) or separated by spaces (`*.md *.txt`) work.
 - When a search finds nothing, the window says which options narrowed it
   (e.g. "Containing text" still filled in, hidden files skipped).
 
 ### Changed
+- No sliders anywhere: the text size is a list with − / + buttons, and "Context lines" is a
+  list (0–10). The separate interface scale and preview font are gone; Ctrl +/− no longer
+  zoom the window.
 - Larger default text (16 pt instead of 13 pt), larger fields and buttons, larger default window.
 - A plain search now looks everywhere, like Agent Ransack: hidden files and folders are
   included and no folders are excluded by default. Skipping hidden files, `.gitignore` rules
@@ -27,6 +34,9 @@ All notable changes to Seeker are listed here. The format follows
   updated once.
 
 ### Fixed
+- The buttons and options on the right of the search form ran past the window edge at large
+  text sizes or narrow widths (#7). The form now wraps, the results columns shrink to fit, and
+  the window has a minimum size.
 - File name search `*.md` missed `.md` files (#3): files in hidden folders (such as
   `~/.config` or `~/.local`), hidden files, files under `node_modules`, `target`, `.git` and
   `__pycache__`, and symlinks to files were all skipped by default.

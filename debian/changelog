@@ -1,3 +1,13 @@
+seeker (0.1.2-1~noble1) UNRELEASED; urgency=medium
+
+  * New upstream version 0.1.2 (not yet released).
+    - Preferences window (Appearance, Font and Size) with Save, Cancel, Close.
+    - One font and text size for everything; no sliders.
+    - Searches include hidden files and folders by default (fixes *.md).
+    - Search form fits narrow windows and large text sizes.
+
+ -- Eric Allen <trajic@tutanota.com>  Mon, 16 Nov 2026 12:00:00 -0800
+
 seeker (0.1.1-1~noble1) noble; urgency=medium
 
   * Initial release for the ppa:electricstars/seeker PPA.

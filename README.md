@@ -30,9 +30,10 @@ no Qt, GTK or Python needed.
 - **Right-click**: open, open containing folder (selects the file in Files/Nautilus),
   open terminal here, copy path / name. Double-click opens the file.
 - **Export** results to CSV or plain text.
-- **Settings** (menu *Settings*): light, dark or custom background color with automatic
-  readable text color; interface and preview fonts (built-in or any installed font), text size
-  and interface scale.
+- **Preferences** (menu *Settings → Preferences…*, its own window): light, dark or custom
+  background color with automatic readable text color; one font (built-in or any installed
+  font) and one text size (10–32 pt) for the whole window. Changes preview live; Save keeps
+  them, Cancel goes back to the last saved settings.
 - Remembers your last search and your settings.
 - Copes with permission errors (listed, not fatal), non-UTF-8 and UTF-16 (BOM) files,
   huge files and very long lines. Skips `/proc`, `/sys`, `/dev` and `/run` when searching `/`.
@@ -142,7 +143,7 @@ seeker --help
 
 CLI exit status: 0 = something found, 1 = nothing found, 2 = error.
 
-Settings are stored in `~/.local/share/seeker/app.ron`.
+Settings and the last search are stored in `~/.local/share/io.github.electricstars.seeker/app.ron`.
 
 ## How it works
 
