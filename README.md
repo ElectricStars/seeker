@@ -61,10 +61,10 @@ no Qt, GTK or Python needed.
 
 ## Install with apt (Ubuntu, Zorin, Mint, Debian)
 
-**Ubuntu 24.04 / Zorin OS 18 / Mint 22: PPA** (once published), which gives automatic updates:
+**Ubuntu 24.04 / Zorin OS 18 / Mint 22: PPA** ([Launchpad page](https://launchpad.net/~clusterfrak/+archive/ubuntu/seeker)), which gives automatic updates:
 
 ```sh
-sudo add-apt-repository ppa:electricstars/seeker
+sudo add-apt-repository ppa:clusterfrak/seeker
 sudo apt update
 sudo apt install seeker
 ```
